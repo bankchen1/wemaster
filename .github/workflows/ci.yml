@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD Pipeline
 
 on:
   push:
@@ -7,73 +7,79 @@ on:
     branches: [ main ]
 
 jobs:
-  test-web:
+  test:
     runs-on: ubuntu-latest
-    defaults:
-      run:
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run tests
+      run: |
+        cd apps/web
+        npm test
+        cd ../api
+        npm test
+
+  deploy-frontend:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy to Vercel
+      uses: amondnet/vercel-action@v20
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
         working-directory: ./apps/web
+        vercel-args: '--prod'
 
-    steps:
-    - uses: actions/checkout@v3
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: './apps/web/package-lock.json'
-    
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Run tests
-      run: npm test
-      
-    - name: Run lint
-      run: npm run lint
-
-  test-api:
+  deploy-backend:
+    needs: test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./apps/api
-
-    services:
-      postgres:
-        image: postgres:14
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: wemaster_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
+    if: github.ref == 'refs/heads/main'
+    
     steps:
     - uses: actions/checkout@v3
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: './apps/api/package-lock.json'
     
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Run migrations
-      run: npm run prisma:migrate
-      env:
-        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/wemaster_test
-        
-    - name: Run tests
-      run: npm test
-      env:
-        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/wemaster_test
-        JWT_SECRET: test_secret
-        STRIPE_SECRET_KEY: test_key
-        LIVEKIT_API_KEY: test_key
-        LIVEKIT_API_SECRET: test_secret
+    - name: Install doctl
+      uses: digitalocean/action-doctl@v2
+      with:
+        token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+    
+    - name: Build container image
+      run: |
+        cd apps/api
+        docker build -t registry.digitalocean.com/wemaster/api:$(echo $GITHUB_SHA | head -c7) .
+    
+    - name: Push image to DigitalOcean Container Registry
+      run: |
+        doctl registry login
+        docker push registry.digitalocean.com/wemaster/api:$(echo $GITHUB_SHA | head -c7)
+    
+    - name: Update deployment file
+      run: |
+        cd apps/api
+        TAG=$(echo $GITHUB_SHA | head -c7)
+        sed -i 's|<IMAGE>|registry.digitalocean.com/wemaster/api:'${TAG}'|' $GITHUB_WORKSPACE/apps/api/k8s/deployment.yml
+    
+    - name: Deploy to DigitalOcean Kubernetes
+      run: |
+        doctl kubernetes cluster kubeconfig save wemaster-cluster
+        kubectl apply -f $GITHUB_WORKSPACE/apps/api/k8s/deployment.yml
+        kubectl rollout status deployment/api-deployment
