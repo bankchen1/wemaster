@@ -1,0 +1,59 @@
+{{#extend "base"}}
+  {{#content "body"}}
+    <h2>Your WeMaster Course is Confirmed!</h2>
+    
+    <p>Dear {{name}},</p>
+    
+    <p>Your course booking has been confirmed. Here are the details:</p>
+
+    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin: 20px 0;">
+      <h3 style="margin-top: 0;">Course Details</h3>
+      <table style="width: 100%;">
+        <tr>
+          <td style="padding: 8px 0;"><strong>Course:</strong></td>
+          <td>{{courseName}}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0;"><strong>{{tutorOrStudent}}:</strong></td>
+          <td>{{partnerName}}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0;"><strong>Schedule:</strong></td>
+          <td>{{schedule}}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0;"><strong>Your Time Zone:</strong></td>
+          <td>{{timezone}}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0;"><strong>Duration:</strong></td>
+          <td>{{duration}} minutes</td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="margin: 20px 0;">
+      <a href="{{addToCalendarUrl}}" class="button" style="margin-right: 10px;">Add to Calendar</a>
+      <a href="{{classroomUrl}}" class="button">Enter Classroom</a>
+    </div>
+
+    <div style="background-color: #fff3cd; padding: 15px; border-radius: 4px; margin: 20px 0;">
+      <h4 style="margin-top: 0; color: #856404;">Important Notes</h4>
+      <ul style="margin-bottom: 0;">
+        <li>Please join the classroom 5 minutes before the start time</li>
+        <li>Ensure you have a stable internet connection</li>
+        <li>Test your audio and video equipment beforehand</li>
+        <li>Have your learning materials ready</li>
+      </ul>
+    </div>
+
+    <p>Need to make changes?</p>
+    <ul>
+      <li>Reschedule: Visit your <a href="{{dashboardUrl}}">dashboard</a></li>
+      <li>Support: Email us at <a href="mailto:hi@wemaster.app">hi@wemaster.app</a></li>
+      <li>Help Center: <a href="https://wemaster.app/help">Visit our Help Center</a></li>
+    </ul>
+
+    <p>Best regards,<br>The WeMaster Team</p>
+  {{/content}}
+{{/extend}}

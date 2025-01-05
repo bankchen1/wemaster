@@ -1,0 +1,31 @@
+{{#extend "base"}}
+  {{#content "body"}}
+    <h2>Your WeMaster Class is Starting Soon!</h2>
+    
+    <p>Hello {{name}},</p>
+    
+    <p>This is a reminder that your class is starting in {{timeUntilStart}}.</p>
+    
+    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin: 20px 0;">
+      <h3 style="margin-top: 0;">Class Details</h3>
+      <p><strong>Subject:</strong> {{subject}}</p>
+      <p><strong>Start Time:</strong> {{startTime}} ({{timezone}})</p>
+      <p><strong>Duration:</strong> {{duration}} minutes</p>
+      <p><strong>{{tutorOrStudent}}:</strong> {{partnerName}}</p>
+    </div>
+
+    <p>Please make sure to:</p>
+    <ul>
+      <li>Test your audio and video equipment</li>
+      <li>Have a stable internet connection</li>
+      <li>Prepare any necessary materials</li>
+      <li>Join the class a few minutes early</li>
+    </ul>
+
+    <a href="{{classroomUrl}}" class="button">Join Classroom</a>
+
+    <p>If you need to reschedule or have any questions, please contact us immediately.</p>
+
+    <p>Best regards,<br>The WeMaster Team</p>
+  {{/content}}
+{{/extend}}

@@ -1,0 +1,46 @@
+{{#extend "base"}}
+  {{#content "body"}}
+    <h2>{{title}}</h2>
+    
+    <p>Dear {{name}},</p>
+    
+    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin: 20px 0;">
+      {{{announcementContent}}}
+    </div>
+
+    {{#if actionRequired}}
+    <div style="background-color: #fff3cd; padding: 15px; border-radius: 4px; margin: 20px 0;">
+      <h4 style="margin-top: 0; color: #856404;">Action Required</h4>
+      <p style="margin-bottom: 0;">{{actionMessage}}</p>
+    </div>
+
+    <a href="{{actionUrl}}" class="button">{{actionButtonText}}</a>
+    {{/if}}
+
+    {{#if scheduledMaintenance}}
+    <div style="margin: 20px 0;">
+      <h4>Scheduled Maintenance Details</h4>
+      <ul>
+        <li><strong>Start Time:</strong> {{maintenanceStart}}</li>
+        <li><strong>Duration:</strong> {{maintenanceDuration}}</li>
+        <li><strong>Affected Services:</strong> {{affectedServices}}</li>
+      </ul>
+    </div>
+    {{/if}}
+
+    <p>For any questions or concerns, please contact us:</p>
+    <ul>
+      <li>Email: <a href="mailto:hi@wemaster.app">hi@wemaster.app</a></li>
+      <li>Help Center: <a href="https://wemaster.app/help">Visit Help Center</a></li>
+    </ul>
+
+    <p>Best regards,<br>The WeMaster Team</p>
+
+    {{#if unsubscribe}}
+    <div style="margin-top: 20px; font-size: 12px; color: #666;">
+      <p>You received this email because you're a registered user of WeMaster. 
+      If you wish to update your notification preferences, <a href="{{preferencesUrl}}">click here</a>.</p>
+    </div>
+    {{/if}}
+  {{/content}}
+{{/extend}}

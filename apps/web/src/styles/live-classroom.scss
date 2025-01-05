@@ -1,0 +1,182 @@
+.live-classroom {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  .classroom-header {
+    padding: 0 24px;
+    background: #fff;
+    border-bottom: 1px solid #f0f0f0;
+    
+    .class-title {
+      margin: 0;
+      color: #1f1f1f;
+    }
+  }
+
+  .classroom-content {
+    flex: 1;
+    padding: 24px;
+    background: #f5f5f5;
+    overflow: auto;
+
+    .main-video-container {
+      background: #fff;
+      border-radius: 8px;
+      padding: 16px;
+      min-height: 400px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+
+      .participant-view {
+        height: 100%;
+
+        &.local {
+          border: 2px solid #1890ff;
+        }
+
+        .participant-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .video-container {
+          position: relative;
+          width: 100%;
+          padding-top: 56.25%; // 16:9 宽高比
+
+          video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+          }
+
+          .video-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f0f0f0;
+            border-radius: 4px;
+          }
+        }
+      }
+    }
+  }
+
+  .whiteboard-container {
+    background: #fff;
+    border-radius: 8px;
+    padding: 16px;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+
+    .toolbar {
+      margin-bottom: 16px;
+      padding: 8px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .canvas-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+
+      canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
+
+  .chat-panel {
+    background: #fff;
+    border-radius: 8px;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+
+    .messages {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+
+      .message {
+        margin-bottom: 16px;
+
+        &.self {
+          .ant-comment-content {
+            background: #e6f7ff;
+            border-radius: 4px;
+            padding: 8px;
+          }
+        }
+      }
+    }
+
+    .input-area {
+      padding: 16px;
+      border-top: 1px solid #f0f0f0;
+    }
+  }
+
+  .participant-list {
+    background: #fff;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    padding: 16px;
+
+    .participant-item {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      border-radius: 4px;
+
+      &:hover {
+        background: #f5f5f5;
+      }
+
+      .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 8px;
+
+        &.online {
+          background: #52c41a;
+        }
+
+        &.offline {
+          background: #f5222d;
+        }
+      }
+    }
+  }
+
+  .control-panel {
+    padding: 16px 24px;
+    background: #fff;
+    border-top: 1px solid #f0f0f0;
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+}

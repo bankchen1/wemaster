@@ -1,0 +1,114 @@
+version: '3.8'
+
+services:
+  # Web 应用
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - api
+
+  # API 服务
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - postgres
+      - redis
+      - jitsi-meet
+      - matrix-synapse
+
+  # PostgreSQL
+  postgres:
+    image: postgres:14
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=wepal
+      - POSTGRES_PASSWORD=wepal_password
+      - POSTGRES_DB=wepal
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Redis
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # Jitsi Meet
+  jitsi-meet:
+    image: jitsi/web:latest
+    ports:
+      - "8443:443"
+    environment:
+      - ENABLE_AUTH=1
+      - ENABLE_GUESTS=1
+      - JICOFO_AUTH_USER=focus
+      - XMPP_DOMAIN=meet.example.com
+      - XMPP_AUTH_DOMAIN=auth.meet.example.com
+      - XMPP_BOSH_URL_BASE=http://xmpp.meet.example.com:5280
+      - PUBLIC_URL=https://meet.example.com
+    volumes:
+      - jitsi_meet_config:/config
+      - jitsi_meet_recordings:/recordings
+
+  # Matrix Synapse
+  matrix-synapse:
+    image: matrixdotorg/synapse:latest
+    ports:
+      - "8008:8008"
+    environment:
+      - SYNAPSE_SERVER_NAME=matrix.example.com
+      - SYNAPSE_REPORT_STATS=no
+    volumes:
+      - matrix_data:/data
+
+  # Elastic APM
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:7.15.0
+    ports:
+      - "8200:8200"
+    environment:
+      - output.elasticsearch.hosts=["elasticsearch:9200"]
+
+  # Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+
+  # Kibana
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.15.0
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+
+volumes:
+  postgres_data:
+  redis_data:
+  jitsi_meet_config:
+  jitsi_meet_recordings:
+  matrix_data:
+  elasticsearch_data:

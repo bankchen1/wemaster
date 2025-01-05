@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./apps/web
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: './apps/web/package-lock.json'
+    
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run tests
+      run: npm test
+      
+    - name: Run lint
+      run: npm run lint
+
+  test-api:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./apps/api
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: wemaster_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: './apps/api/package-lock.json'
+    
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run migrations
+      run: npm run prisma:migrate
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/wemaster_test
+        
+    - name: Run tests
+      run: npm test
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/wemaster_test
+        JWT_SECRET: test_secret
+        STRIPE_SECRET_KEY: test_key
+        LIVEKIT_API_KEY: test_key
+        LIVEKIT_API_SECRET: test_secret

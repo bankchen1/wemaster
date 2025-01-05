@@ -1,0 +1,65 @@
+{{#extend "base"}}
+  {{#content "body"}}
+    <h2>Payment {{status}} - WeMaster</h2>
+    
+    <p>Dear {{name}},</p>
+    
+    {{#if success}}
+    <p>Thank you for your payment! Your transaction has been successfully processed.</p>
+    {{else}}
+    <p>We encountered an issue processing your payment. Please review the details below.</p>
+    {{/if}}
+
+    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin: 20px 0;">
+      <h3 style="margin-top: 0;">Payment Details</h3>
+      <table style="width: 100%;">
+        <tr>
+          <td style="padding: 8px 0;"><strong>Transaction ID:</strong></td>
+          <td>{{transactionId}}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0;"><strong>Amount:</strong></td>
+          <td>{{amount}} {{currency}}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0;"><strong>Date:</strong></td>
+          <td>{{date}}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0;"><strong>Payment Method:</strong></td>
+          <td>{{paymentMethod}}</td>
+        </tr>
+      </table>
+    </div>
+
+    {{#if success}}
+    <div style="background-color: #d4edda; padding: 15px; border-radius: 4px; margin: 20px 0;">
+      <p style="color: #155724; margin: 0;">Your payment has been confirmed and your course access is now active.</p>
+    </div>
+
+    <a href="{{dashboardUrl}}" class="button">Go to Dashboard</a>
+    {{else}}
+    <div style="background-color: #f8d7da; padding: 15px; border-radius: 4px; margin: 20px 0;">
+      <p style="color: #721c24; margin: 0;">Reason: {{errorMessage}}</p>
+    </div>
+
+    <p>To resolve this issue, you can:</p>
+    <ul>
+      <li>Try again with a different payment method</li>
+      <li>Contact your bank to authorize the transaction</li>
+      <li>Reach out to our support team</li>
+    </ul>
+
+    <a href="{{retryPaymentUrl}}" class="button">Retry Payment</a>
+    {{/if}}
+
+    <p>Need assistance?</p>
+    <ul>
+      <li>Email: <a href="mailto:hi@wemaster.app">hi@wemaster.app</a></li>
+      <li>Help Center: <a href="https://wemaster.app/help">Payment Support</a></li>
+      <li>Phone: {{supportPhone}}</li>
+    </ul>
+
+    <p>Best regards,<br>The WeMaster Team</p>
+  {{/content}}
+{{/extend}}

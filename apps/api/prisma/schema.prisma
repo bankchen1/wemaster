@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Meeting {
+  id            String      @id
+  hostId        String
+  title         String
+  description   String?
+  startTime     DateTime
+  endTime       DateTime?
+  duration      Int         // 分钟
+  status        String      // scheduled, ongoing, ended, cancelled
+  matrixRoomId  String
+  recordingUrl  String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // 关联
+  host          User        @relation("HostedMeetings", fields: [hostId], references: [id])
+  participants  MeetingParticipant[]
+  messages      MeetingMessage[]
+}
+
+model MeetingParticipant {
+  id          String    @id @default(cuid())
+  meetingId   String
+  userId      String
+  joinTime    DateTime
+  leaveTime   DateTime?
+  role        String    @default("participant") // host, participant
+  
+  // 关联
+  meeting     Meeting   @relation(fields: [meetingId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@unique([meetingId, userId])
+}
+
+model MeetingMessage {
+  id          String    @id @default(cuid())
+  meetingId   String
+  senderId    String
+  content     String
+  type        String    // text, image, file
+  timestamp   DateTime
+  
+  // 关联
+  meeting     Meeting   @relation(fields: [meetingId], references: [id])
+  sender      User      @relation(fields: [senderId], references: [id])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  avatar        String?
+  matrixUserId  String?   @unique
+  
+  // 关联
+  hostedMeetings        Meeting[]              @relation("HostedMeetings")
+  participatedMeetings  MeetingParticipant[]
+  messages              MeetingMessage[]
+  taughtSessions        LiveSession[]          @relation("TutorSessions")
+  attendedSessions      LiveSession[]          @relation("StudentSessions")
+  stripeAccount         StripeTutorAccount?
+  stripeCustomer        StripeCustomer?
+  payments              Payment[]              @relation("StudentPayments")
+  receivedPayments      Payment[]              @relation("TutorPayments")
+  withdrawals           Withdrawal[]
+}
+
+// 直播课程相关模型
+model LiveSession {
+  id              String          @id @default(cuid())
+  bookingId       String          @unique
+  roomName        String          @unique
+  status          String          // created, active, completed, cancelled
+  startTime       DateTime
+  endTime         DateTime
+  actualStartTime DateTime?
+  actualEndTime   DateTime?
+  recordingUrl    String?
+  tutorId         String
+  studentId       String
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // 关联
+  tutor           User            @relation("TutorSessions", fields: [tutorId], references: [id])
+  student         User            @relation("StudentSessions", fields: [studentId], references: [id])
+  events          SessionEvent[]
+  booking         Booking         @relation(fields: [bookingId], references: [id])
+}
+
+model SessionEvent {
+  id          String      @id @default(cuid())
+  sessionId   String
+  type        String      // chat, whiteboard, screen_share, hand_raise
+  action      String      // message_sent, drawing_created, etc.
+  userId      String
+  metadata    Json?
+  timestamp   DateTime    @default(now())
+
+  // 关联
+  session     LiveSession @relation(fields: [sessionId], references: [id])
+}
+
+// Stripe 相关模型
+model StripeTutorAccount {
+  id              String    @id @default(cuid())
+  tutorId         String    @unique
+  stripeAccountId String    @unique
+  country         String
+  payoutSchedule  String    // daily, weekly, monthly
+  status          String    // pending_verification, verified, rejected
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // 关联
+  tutor           User      @relation(fields: [tutorId], references: [id])
+}
+
+model StripeCustomer {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  stripeCustomerId String   @unique
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // 关联
+  user            User      @relation(fields: [userId], references: [id])
+}
+
+model Payment {
+  id                    String    @id @default(cuid())
+  bookingId            String    @unique
+  studentId            String
+  tutorId              String
+  amount               Int       // 以分为单位
+  status               String    // pending, succeeded, failed
+  stripePaymentIntentId String   @unique
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  // 关联
+  student              User      @relation("StudentPayments", fields: [studentId], references: [id])
+  tutor                User      @relation("TutorPayments", fields: [tutorId], references: [id])
+  booking              Booking   @relation(fields: [bookingId], references: [id])
+}
+
+model Withdrawal {
+  id              String    @id @default(cuid())
+  tutorId         String
+  amount          Int       // 以分为单位
+  status          String    // pending, succeeded, failed
+  stripePayoutId  String    @unique
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // 关联
+  tutor           User      @relation(fields: [tutorId], references: [id])
+}
+
+model Booking {
+  id          String       @id @default(cuid())
+  tutorId     String
+  studentId   String
+  startTime   DateTime
+  endTime     DateTime
+  status      String      // pending, confirmed, completed, cancelled
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // 关联
+  payment     Payment?
+  liveSession LiveSession?
+}
