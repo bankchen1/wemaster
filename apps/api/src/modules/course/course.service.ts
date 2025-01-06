@@ -1,11 +1,14 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { Repository, Between } from 'typeorm'
 import { Course } from './course.entity'
 import { Tutor } from '../tutor/tutor.entity'
 import { Schedule } from '../schedule/schedule.entity'
 import { CreateCourseDto, UpdateCourseDto } from './course.dto'
 import { FileService } from '../file/file.service'
+import { PricingService } from '../pricing/pricing.service'
+import { CalculatePriceDto, UpdatePriceDto } from './dto/course-price.dto'
+import { CourseType } from '@wemaster/shared/types/pricing'
 
 @Injectable()
 export class CourseService {
@@ -16,7 +19,8 @@ export class CourseService {
     private tutorRepository: Repository<Tutor>,
     @InjectRepository(Schedule)
     private scheduleRepository: Repository<Schedule>,
-    private fileService: FileService
+    private fileService: FileService,
+    private pricingService: PricingService
   ) {}
 
   async create(tutorId: string, createCourseDto: CreateCourseDto) {
@@ -28,14 +32,23 @@ export class CourseService {
       throw new NotFoundException('导师不存在')
     }
 
+    // 计算课程价格
+    const { basePrice, courseType, lessonsCount } = createCourseDto
+    const priceInfo = this.pricingService.calculateCoursePrice(basePrice)
+
     const course = this.courseRepository.create({
       ...createCourseDto,
       tutor,
+      basePrice: priceInfo.basePrice,
+      platformFee: priceInfo.platformFee,
+      displayPrice: priceInfo.totalPrice,
+      lessonsCount: courseType === CourseType.LESSONS_PLAN ? lessonsCount : undefined,
       stats: {
         totalStudents: 0,
         totalSessions: 0,
         averageRating: 0,
-        reviewCount: 0
+        reviewCount: 0,
+        completedLessons: 0
       }
     })
 
@@ -64,6 +77,17 @@ export class CourseService {
 
   async update(id: string, updateCourseDto: UpdateCourseDto) {
     const course = await this.findOne(id)
+    
+    // 如果更新了价格相关信息，重新计算价格
+    if ('basePrice' in updateCourseDto) {
+      const priceInfo = this.pricingService.calculateCoursePrice(updateCourseDto.basePrice)
+      Object.assign(updateCourseDto, {
+        basePrice: priceInfo.basePrice,
+        platformFee: priceInfo.platformFee,
+        displayPrice: priceInfo.totalPrice
+      })
+    }
+    
     Object.assign(course, updateCourseDto)
     return this.courseRepository.save(course)
   }
@@ -102,6 +126,43 @@ export class CourseService {
     })
   }
 
+  async calculatePrice(calculatePriceDto: CalculatePriceDto) {
+    const { basePrice, courseType, lessonsCount } = calculatePriceDto
+
+    // 验证课时包必须指定课时数
+    if (courseType === CourseType.LESSONS_PLAN && !lessonsCount) {
+      throw new BadRequestException('课时包必须指定课时数')
+    }
+
+    const priceInfo = this.pricingService.calculateCoursePrice(basePrice)
+    
+    return {
+      ...priceInfo,
+      perLessonPrice: courseType === CourseType.LESSONS_PLAN 
+        ? priceInfo.totalPrice / lessonsCount 
+        : priceInfo.totalPrice
+    }
+  }
+
+  async updatePrice(id: string, updatePriceDto: UpdatePriceDto) {
+    const course = await this.findOne(id)
+    
+    // 计算新的价格信息
+    const priceInfo = this.pricingService.calculateCoursePrice(updatePriceDto.basePrice)
+    
+    // 更新课程价格信息
+    course.basePrice = priceInfo.basePrice
+    course.platformFee = priceInfo.platformFee
+    course.displayPrice = priceInfo.totalPrice
+    
+    // 如果是课时包且更新了课时数
+    if (course.type === CourseType.LESSONS_PLAN && updatePriceDto.lessonsCount) {
+      course.lessonsCount = updatePriceDto.lessonsCount
+    }
+    
+    return this.courseRepository.save(course)
+  }
+
   async getStats(id: string) {
     const course = await this.findOne(id)
     
@@ -112,11 +173,18 @@ export class CourseService {
 
     const completedSchedules = schedules.filter(s => s.status === 'completed')
     const totalRevenue = completedSchedules.reduce((acc, s) => acc + s.payment.amount, 0)
+    const completedLessons = completedSchedules.length
+
+    // 更新已完成课时数
+    if (course.stats.completedLessons !== completedLessons) {
+      course.stats.completedLessons = completedLessons
+      await this.courseRepository.save(course)
+    }
 
     return {
       ...course.stats,
       totalRevenue,
-      completionRate: (completedSchedules.length / schedules.length) * 100
+      completionRate: (completedLessons / schedules.length) * 100
     }
   }
 

@@ -1,12 +1,13 @@
 import { IsString, IsArray, IsEnum, IsNumber, IsOptional, Min, Max, ValidateNested } from 'class-validator'
 import { Type } from 'class-transformer'
+import { CourseType } from '@wemaster/shared/types/pricing'
 
 export class CreateCourseDto {
   @IsString()
   name: string
 
-  @IsEnum(['regular', 'trial', 'group'])
-  type: 'regular' | 'trial' | 'group'
+  @IsEnum(CourseType)
+  courseType: CourseType
 
   @IsString()
   description: string
@@ -17,12 +18,17 @@ export class CreateCourseDto {
 
   @IsNumber()
   @Min(0)
-  price: number
+  basePrice: number
 
   @IsNumber()
   @Min(15)
   @Max(180)
   duration: number
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  lessonsCount?: number
 
   @IsOptional()
   @IsNumber()
@@ -88,6 +94,14 @@ export class CourseStatsDto {
   totalSessions: number
   averageRating: number
   reviewCount: number
+  completedLessons: number
   totalRevenue: number
   completionRate: number
+}
+
+export class CoursePriceInfoDto {
+  basePrice: number
+  platformFee: number
+  displayPrice: number
+  perLessonPrice?: number
 }

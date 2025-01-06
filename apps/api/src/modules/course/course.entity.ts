@@ -10,6 +10,8 @@ import {
 import { Tutor } from '../tutor/tutor.entity'
 import { Schedule } from '../schedule/schedule.entity'
 import { Review } from '../review/review.entity'
+import { CourseType } from '@wemaster/shared/types/pricing'
+import { LessonStatus } from '@wemaster/shared/types/lesson'
 
 @Entity('courses')
 export class Course {
@@ -19,8 +21,12 @@ export class Course {
   @Column()
   name: string
 
-  @Column()
-  type: 'regular' | 'trial' | 'group'
+  @Column({
+    type: 'enum',
+    enum: CourseType,
+    default: CourseType.ONE_ON_ONE
+  })
+  type: CourseType
 
   @Column('text')
   description: string
@@ -36,11 +42,20 @@ export class Course {
     size: number
   }[]
 
-  @Column()
-  price: number
+  @Column('decimal', { precision: 10, scale: 2 })
+  basePrice: number // 导师基础收入
+
+  @Column('decimal', { precision: 10, scale: 2 })
+  platformFee: number // 平台服务费
+
+  @Column('decimal', { precision: 10, scale: 2 })
+  displayPrice: number // 展示给学生的价格（含税）
 
   @Column()
-  duration: number
+  duration: number // 课程时长（分钟）
+
+  @Column({ nullable: true })
+  lessonsCount?: number // 课时包数量
 
   @Column({ default: 1 })
   minStudents: number
@@ -62,10 +77,45 @@ export class Course {
     totalSessions: number
     averageRating: number
     reviewCount: number
+    completedLessons: number // 已完成课时数
   }
 
-  @Column()
-  status: 'active' | 'draft' | 'archived'
+  @Column({
+    type: 'enum',
+    enum: LessonStatus,
+    default: LessonStatus.PENDING
+  })
+  status: LessonStatus;
+
+  @Column('timestamp')
+  startTime: Date;
+
+  @Column('timestamp')
+  endTime: Date;
+
+  @Column('timestamp', { nullable: true })
+  completedTime?: Date;
+
+  @Column('timestamp', { nullable: true })
+  lastFeedbackTime?: Date;
+
+  @Column('timestamp', { nullable: true })
+  lastAppealTime?: Date;
+
+  @Column('jsonb', { nullable: true })
+  feedback?: {
+    rating: number;
+    comment: string;
+    createdAt: Date;
+  };
+
+  @Column('jsonb', { nullable: true })
+  appeal?: {
+    reason: string;
+    status: 'pending' | 'approved' | 'rejected';
+    createdAt: Date;
+    resolvedAt?: Date;
+  };
 
   @ManyToOne(() => Tutor, tutor => tutor.courses)
   tutor: Tutor

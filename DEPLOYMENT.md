@@ -177,3 +177,187 @@ docker-compose up -d --build
 For issues and support:
 - GitHub Issues: [Repository Issues](https://github.com/your-org/wepal/issues)
 - Documentation: [Project Wiki](https://github.com/your-org/wepal/wiki)
+
+## Vercel 部署
+
+### 前端部署 (apps/web)
+
+1. Vercel 项目设置：
+```bash
+# 在 apps/web 目录下初始化 Vercel
+vercel init
+
+# 配置项目
+vercel link
+```
+
+2. 环境变量配置：
+   - `NEXT_PUBLIC_API_URL`: 后端 API 地址
+   - `NEXT_PUBLIC_WS_URL`: WebSocket 服务地址
+   - `NEXT_PUBLIC_JITSI_SERVER`: Jitsi Meet 服务器地址
+   - `NEXT_PUBLIC_STRIPE_KEY`: Stripe 公钥
+
+3. 部署命令：
+```bash
+vercel --prod
+```
+
+### 后端部署 (apps/api)
+
+1. 数据库配置：
+```bash
+# 创建数据库
+createdb wemaster_prod
+
+# 运行迁移
+npm run migration:run
+```
+
+2. 环境变量配置：
+   - `DATABASE_URL`: PostgreSQL 连接字符串
+   - `REDIS_URL`: Redis 连接字符串
+   - `JWT_SECRET`: JWT 密钥
+   - `STRIPE_SECRET_KEY`: Stripe 密钥
+   - `AWS_ACCESS_KEY`: AWS 访问密钥
+   - `AWS_SECRET_KEY`: AWS 密钥
+
+3. PM2 部署：
+```bash
+# 安装 PM2
+npm install -g pm2
+
+# 启动服务
+pm2 start ecosystem.config.js --env production
+```
+
+## Docker 部署
+
+### 使用 Docker Compose
+
+1. 构建镜像：
+```bash
+docker-compose build
+```
+
+2. 启动服务：
+```bash
+docker-compose up -d
+```
+
+3. 数据库迁移：
+```bash
+docker-compose exec api npm run migration:run
+```
+
+### Kubernetes 部署
+
+1. 创建 Kubernetes 配置：
+```bash
+kubectl apply -f k8s/
+```
+
+2. 检查部署状态：
+```bash
+kubectl get pods
+kubectl get services
+```
+
+## CI/CD 配置
+
+### GitHub Actions
+
+1. 前端部署流程：
+```yaml
+name: Frontend CI/CD
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'apps/web/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v20
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.ORG_ID}}
+          vercel-project-id: ${{ secrets.PROJECT_ID}}
+```
+
+2. 后端部署流程：
+```yaml
+name: Backend CI/CD
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'apps/api/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Deploy to Production
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /var/www/wemaster
+            git pull
+            npm install
+            npm run build
+            pm2 restart all
+```
+
+## 监控配置
+
+### 性能监控
+
+1. 安装 New Relic：
+```bash
+npm install newrelic --save
+```
+
+2. 配置 PM2 监控：
+```bash
+pm2 install pm2-server-monit
+```
+
+### 日志管理
+
+1. 配置 ELK Stack：
+```yaml
+# docker-compose.elk.yml
+version: '3'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.3
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.9.3
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.9.3
+```
+
+## 备份策略
+
+### 数据库备份
+
+1. 自动备份脚本：
+```bash
+#!/bin/bash
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+pg_dump -U postgres wemaster_prod > backup_${TIMESTAMP}.sql
+aws s3 cp backup_${TIMESTAMP}.sql s3://wemaster-backups/
+```
+
+2. 配置定时任务：
+```bash
+0 0 * * * /path/to/backup.sh
+```

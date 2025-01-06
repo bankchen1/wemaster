@@ -1,0 +1,205 @@
+@import './theme.scss';
+
+// 重置样式
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+// 滚动条样式
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: $bg-secondary;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+}
+
+// 页面布局
+.page-container {
+  min-height: 100vh;
+  padding: $spacing-md;
+  background-color: $bg-secondary;
+}
+
+// 主要内容区域
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $spacing-md;
+  background-color: $bg-primary;
+  border-radius: $border-radius-base;
+  box-shadow: $box-shadow-sm;
+}
+
+// 动画
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity $animation-duration-base $animation-timing-function-base;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-fade-enter-active {
+  transition: all $animation-duration-base ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all $animation-duration-base cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+}
+
+// 响应式布局
+@media (max-width: 768px) {
+  .page-container {
+    padding: $spacing-xs;
+  }
+
+  .main-content {
+    padding: $spacing-sm;
+  }
+}
+
+// 表单样式
+.form-section {
+  margin-bottom: $spacing-lg;
+
+  .form-title {
+    font-size: $font-size-lg;
+    font-weight: 500;
+    margin-bottom: $spacing-md;
+    color: $text-primary;
+  }
+}
+
+// 按钮组
+.button-group {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+
+  &.right {
+    justify-content: flex-end;
+  }
+
+  &.center {
+    justify-content: center;
+  }
+}
+
+// 列表样式
+.list-item {
+  padding: $spacing-sm;
+  border-bottom: 1px solid $border-color-split;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: $bg-secondary;
+  }
+}
+
+// 标签样式
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 $spacing-xs;
+  height: 22px;
+  font-size: $font-size-sm;
+  line-height: 20px;
+  border-radius: $border-radius-sm;
+  border: 1px solid $border-color;
+  background: $bg-primary;
+  margin-right: $spacing-xs;
+  margin-bottom: $spacing-xs;
+
+  &.primary {
+    color: $primary-color;
+    border-color: lighten($primary-color, 30%);
+    background: lighten($primary-color, 40%);
+  }
+
+  &.success {
+    color: $success-color;
+    border-color: lighten($success-color, 30%);
+    background: lighten($success-color, 40%);
+  }
+
+  &.warning {
+    color: $warning-color;
+    border-color: lighten($warning-color, 30%);
+    background: lighten($warning-color, 40%);
+  }
+
+  &.error {
+    color: $error-color;
+    border-color: lighten($error-color, 30%);
+    background: lighten($error-color, 40%);
+  }
+}
+
+// 加载状态
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+// 空状态
+.empty-state {
+  text-align: center;
+  padding: $spacing-xl 0;
+  color: $text-secondary;
+
+  .icon {
+    font-size: 48px;
+    margin-bottom: $spacing-md;
+  }
+
+  .text {
+    font-size: $font-size-base;
+  }
+}
+
+// 错误状态
+.error-state {
+  text-align: center;
+  padding: $spacing-xl 0;
+  color: $error-color;
+
+  .icon {
+    font-size: 48px;
+    margin-bottom: $spacing-md;
+  }
+
+  .text {
+    font-size: $font-size-base;
+  }
+
+  .retry-button {
+    margin-top: $spacing-md;
+  }
+}

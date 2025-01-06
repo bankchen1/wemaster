@@ -1,202 +1,177 @@
-import React, { useState } from 'react'
+import React from 'react';
 import {
   Card,
   CardContent,
-  CardMedia,
+  CardActions,
   Typography,
-  IconButton,
   Box,
+  Button,
+  Avatar,
   Chip,
   Rating,
-  Tooltip,
-  Skeleton
-} from '@mui/material'
+  styled,
+  useTheme,
+} from '@mui/material';
+import { motion } from 'framer-motion';
 import {
-  Favorite,
-  FavoriteBorder,
-  Share,
-  School,
-  Star
-} from '@mui/icons-material'
-import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../hooks/useAuth'
-import { useTutorSocial } from '../../hooks/useTutorSocial'
-import { TutorProfile } from '../../types/tutor'
-import { ShareDialog } from '../common/ShareDialog'
+  Verified as VerifiedIcon,
+  School as SchoolIcon,
+  AccessTime as AccessTimeIcon,
+  Language as LanguageIcon,
+} from '@mui/icons-material';
+import { Tutor } from '@/types';
+import { formatCurrency } from '@/utils/format';
+
+const StyledCard = styled(Card)(({ theme }) => ({
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  borderRadius: '20px',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'translateY(-8px)',
+    boxShadow: '0 12px 30px rgba(0, 0, 0, 0.12)',
+  },
+}));
+
+const TutorAvatar = styled(Avatar)(({ theme }) => ({
+  width: 120,
+  height: 120,
+  border: `4px solid ${theme.palette.background.paper}`,
+  boxShadow: '0 4px 14px rgba(0, 0, 0, 0.12)',
+}));
+
+const StyledChip = styled(Chip)(({ theme }) => ({
+  borderRadius: '8px',
+  '&.subject': {
+    backgroundColor: theme.palette.primary.light,
+    color: theme.palette.primary.contrastText,
+  },
+  '&.language': {
+    backgroundColor: theme.palette.secondary.light,
+    color: theme.palette.secondary.contrastText,
+  },
+}));
 
 interface TutorCardProps {
-  tutor: TutorProfile
-  onFollow?: (tutorId: string) => void
-  onUnfollow?: (tutorId: string) => void
+  tutor: Tutor;
+  onBookTrial?: () => void;
+  onQuickChat?: () => void;
+  onViewProfile?: () => void;
 }
 
 export const TutorCard: React.FC<TutorCardProps> = ({
   tutor,
-  onFollow,
-  onUnfollow
+  onBookTrial,
+  onQuickChat,
+  onViewProfile,
 }) => {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
-  const { user } = useAuth()
-  const { isFollowing, followTutor, unfollowTutor } = useTutorSocial()
-  const [loading, setLoading] = useState(false)
-  const [shareOpen, setShareOpen] = useState(false)
-
-  const handleFollowClick = async (e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (!user) {
-      navigate('/login')
-      return
-    }
-
-    setLoading(true)
-    try {
-      if (isFollowing) {
-        await unfollowTutor(tutor.id)
-        onUnfollow?.(tutor.id)
-      } else {
-        await followTutor(tutor.id)
-        onFollow?.(tutor.id)
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleShareClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setShareOpen(true)
-  }
-
-  const handleCardClick = () => {
-    navigate(`/tutors/${tutor.id}`)
-  }
+  const theme = useTheme();
 
   return (
-    <>
-      <Card
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100%',
-          cursor: 'pointer',
-          '&:hover': {
-            boxShadow: 6
-          }
-        }}
-        onClick={handleCardClick}
-      >
-        <CardMedia
-          component="img"
-          height="200"
-          image={tutor.user.avatarUrl || '/default-avatar.png'}
-          alt={tutor.user.fullName}
-        />
-        <CardContent sx={{ flexGrow: 1 }}>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              mb: 1
-            }}
-          >
-            <Typography variant="h6" component="div">
-              {tutor.user.fullName}
-            </Typography>
-            <Box>
-              <IconButton
-                onClick={handleShareClick}
-                size="small"
-                sx={{ mr: 1 }}
-              >
-                <Share />
-              </IconButton>
-              <IconButton
-                onClick={handleFollowClick}
-                disabled={loading}
-                size="small"
-                color={isFollowing ? 'primary' : 'default'}
-              >
-                {loading ? (
-                  <Skeleton variant="circular" width={24} height={24} />
-                ) : isFollowing ? (
-                  <Favorite />
-                ) : (
-                  <FavoriteBorder />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+    >
+      <StyledCard>
+        <CardContent>
+          <Box display="flex" alignItems="flex-start" mb={3}>
+            <TutorAvatar src={tutor.avatar} alt={tutor.name} />
+            <Box ml={2} flex={1}>
+              <Box display="flex" alignItems="center" mb={1}>
+                <Typography variant="h6" component="h3">
+                  {tutor.name}
+                </Typography>
+                {tutor.verificationStatus === 'verified' && (
+                  <VerifiedIcon
+                    sx={{ ml: 1, color: 'primary.main' }}
+                    fontSize="small"
+                  />
                 )}
-              </IconButton>
+              </Box>
+              <Typography variant="subtitle1" color="textSecondary" gutterBottom>
+                {tutor.headline}
+              </Typography>
+              <Box display="flex" alignItems="center" gap={1} mb={1}>
+                <Rating value={tutor.rating} precision={0.5} readOnly size="small" />
+                <Typography variant="body2" color="textSecondary">
+                  ({tutor.totalReviews})
+                </Typography>
+              </Box>
+              <Typography variant="h6" color="primary">
+                {formatCurrency(tutor.hourlyRate)}/hour
+              </Typography>
             </Box>
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <School sx={{ mr: 1, fontSize: 20 }} />
-            <Typography variant="body2" color="text.secondary">
-              {tutor.education}
-            </Typography>
+          <Box mb={2}>
+            <Box display="flex" alignItems="center" gap={1} mb={1}>
+              <SchoolIcon fontSize="small" color="action" />
+              <Typography variant="body2">
+                {tutor.education[0]?.degree} in {tutor.education[0]?.field}
+              </Typography>
+            </Box>
+            <Box display="flex" alignItems="center" gap={1} mb={1}>
+              <AccessTimeIcon fontSize="small" color="action" />
+              <Typography variant="body2">
+                {tutor.totalLessons}+ lessons taught
+              </Typography>
+            </Box>
+            <Box display="flex" alignItems="center" gap={1}>
+              <LanguageIcon fontSize="small" color="action" />
+              <Typography variant="body2">
+                {tutor.languages.map(lang => lang.name).join(', ')}
+              </Typography>
+            </Box>
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <Rating
-              value={tutor.rating}
-              readOnly
-              precision={0.5}
-              size="small"
-            />
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ ml: 1 }}
-            >
-              ({tutor.totalReviews})
-            </Typography>
+          <Box display="flex" flexWrap="wrap" gap={1} mb={2}>
+            {tutor.subjects.map(subject => (
+              <StyledChip
+                key={subject.id}
+                label={subject.name}
+                size="small"
+                className="subject"
+              />
+            ))}
           </Box>
 
           <Typography
             variant="body2"
-            color="text.secondary"
+            color="textSecondary"
             sx={{
-              mb: 2,
               display: '-webkit-box',
               WebkitLineClamp: 3,
               WebkitBoxOrient: 'vertical',
-              overflow: 'hidden'
+              overflow: 'hidden',
+              mb: 2,
             }}
           >
             {tutor.bio}
           </Typography>
-
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-            {tutor.subjects.slice(0, 3).map((subject, index) => (
-              <Chip
-                key={index}
-                label={subject}
-                size="small"
-                onClick={e => e.stopPropagation()}
-              />
-            ))}
-            {tutor.subjects.length > 3 && (
-              <Tooltip title={tutor.subjects.slice(3).join(', ')}>
-                <Chip
-                  label={`+${tutor.subjects.length - 3}`}
-                  size="small"
-                  onClick={e => e.stopPropagation()}
-                />
-              </Tooltip>
-            )}
-          </Box>
         </CardContent>
-      </Card>
 
-      <ShareDialog
-        open={shareOpen}
-        onClose={() => setShareOpen(false)}
-        title={t('tutor.share.title', { name: tutor.user.fullName })}
-        url={`/tutors/${tutor.id}`}
-        description={tutor.bio}
-        image={tutor.user.avatarUrl}
-      />
-    </>
-  )
-}
+        <CardActions sx={{ mt: 'auto', p: 2, pt: 0 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            onClick={onBookTrial}
+            sx={{ mr: 1 }}
+          >
+            Book Trial Lesson
+          </Button>
+          <Button
+            variant="outlined"
+            color="primary"
+            fullWidth
+            onClick={onQuickChat}
+          >
+            Quick Chat
+          </Button>
+        </CardActions>
+      </StyledCard>
+    </motion.div>
+  );
+};
