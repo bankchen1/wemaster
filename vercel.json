@@ -6,12 +6,6 @@
   "installCommand": "npm install",
   "framework": "nextjs",
   "outputDirectory": ".next",
-  "functions": {
-    "apps/api/dist/**/*": {
-      "memory": 1024,
-      "maxDuration": 10
-    }
-  },
   "builds": [
     {
       "src": "apps/web/package.json",
