@@ -7,15 +7,29 @@
   "framework": "nextjs",
   "outputDirectory": ".next",
   "functions": {
-    "apps/api/src/**/*": {
+    "apps/api/dist/**/*": {
       "memory": 1024,
       "maxDuration": 10
     }
   },
-  "rewrites": [
+  "builds": [
     {
-      "source": "/api/(.*)",
-      "destination": "/apps/api/src/$1"
+      "src": "apps/web/package.json",
+      "use": "@vercel/next"
+    },
+    {
+      "src": "apps/api/src/main.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "apps/api/src/main.ts"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "apps/web/$1"
     }
   ],
   "env": {
