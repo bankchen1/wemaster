@@ -7,16 +7,18 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
-import * as path from 'path';
-import * as fs from 'fs/promises';
 import * as crypto from 'crypto';
 import { File, FileAccessLevel, FileCategory } from './file.entity';
 import { FileShare } from './file-share.entity';
 import { User } from '../user/user.entity';
+import { put } from '@vercel/blob';
+import { del } from '@vercel/blob';
+import { list } from '@vercel/blob';
 
 @Injectable()
 export class StorageService {
-  private readonly uploadDir: string;
+  private readonly clientToken = process.env.BLOB_READ_WRITE_TOKEN;
+  private readonly uploadDir = 'uploads';
   private readonly maxFileSize: number;
   private readonly allowedMimeTypes: string[];
 
@@ -27,7 +29,6 @@ export class StorageService {
     private readonly fileShareRepository: Repository<FileShare>,
     private readonly configService: ConfigService,
   ) {
-    this.uploadDir = this.configService.get<string>('UPLOAD_DIR', './uploads');
     this.maxFileSize = this.configService.get<number>('MAX_FILE_SIZE', 100 * 1024 * 1024); // 100MB
     this.allowedMimeTypes = this.configService.get<string[]>('ALLOWED_MIME_TYPES', [
       'image/jpeg',
@@ -62,20 +63,12 @@ export class StorageService {
     }
 
     // Generate unique filename
-    const extension = path.extname(file.originalname);
-    const filename = `${crypto.randomBytes(16).toString('hex')}${extension}`;
-    const relativePath = path.join(
-      options.courseId || userId,
-      options.category || FileCategory.OTHER,
-      filename,
-    );
-    const fullPath = path.join(this.uploadDir, relativePath);
+    const extension = file.originalname.split('.').pop();
+    const filename = `${crypto.randomBytes(16).toString('hex')}.${extension}`;
+    const path = `${this.uploadDir}/${userId}/${options.category || FileCategory.OTHER}/${filename}`;
 
-    // Create directory if not exists
-    await fs.mkdir(path.dirname(fullPath), { recursive: true });
-
-    // Move file
-    await fs.writeFile(fullPath, file.buffer);
+    // Upload file to Vercel Blob Storage
+    const url = await this.uploadFileToBlobStorage(file, path);
 
     // Create file record
     const fileEntity = this.fileRepository.create({
@@ -84,7 +77,7 @@ export class StorageService {
       mimeType: file.mimetype,
       extension,
       size: file.size,
-      path: relativePath,
+      path,
       userId,
       courseId: options.courseId,
       category: options.category || FileCategory.OTHER,
@@ -92,6 +85,7 @@ export class StorageService {
       description: options.description,
       tags: options.tags || [],
       expiresAt: options.expiresAt,
+      url,
     });
 
     return this.fileRepository.save(fileEntity);
@@ -121,14 +115,14 @@ export class StorageService {
 
   async downloadFile(fileId: string, userId: string): Promise<{ path: string; filename: string }> {
     const file = await this.getFile(fileId, userId);
-    
+
     // Update download count
     await this.fileRepository.update(fileId, {
       downloads: () => 'downloads + 1',
     });
 
     return {
-      path: path.join(this.uploadDir, file.path),
+      path: file.url,
       filename: file.originalName,
     };
   }
@@ -186,12 +180,8 @@ export class StorageService {
       throw new UnauthorizedException('You do not have permission to delete this file');
     }
 
-    // Delete physical file
-    try {
-      await fs.unlink(path.join(this.uploadDir, file.path));
-    } catch (error) {
-      console.error('Error deleting file:', error);
-    }
+    // Delete file from Vercel Blob Storage
+    await this.deleteFileFromBlobStorage(file.path);
 
     // Delete shares
     await this.fileShareRepository.delete({ fileId });
@@ -269,5 +259,25 @@ export class StorageService {
     query.skip(skip).take(limit);
 
     return query.getManyAndCount();
+  }
+
+  private async uploadFileToBlobStorage(file: Express.Multer.File, path: string): Promise<string> {
+    try {
+      const { url } = await put(path, file.buffer, {
+        access: 'public',
+        token: this.clientToken,
+      });
+      return url;
+    } catch (error) {
+      throw new Error(`Failed to upload file: ${error.message}`);
+    }
+  }
+
+  private async deleteFileFromBlobStorage(path: string): Promise<void> {
+    try {
+      await del(path, { token: this.clientToken });
+    } catch (error) {
+      throw new Error(`Failed to delete file: ${error.message}`);
+    }
   }
 }
