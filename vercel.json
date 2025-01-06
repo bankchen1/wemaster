@@ -1,44 +1,10 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
   "framework": "nextjs",
-  "outputDirectory": ".next",
   "builds": [
     {
-      "src": "apps/web/package.json",
+      "src": "apps/web/next.config.js",
       "use": "@vercel/next"
-    },
-    {
-      "src": "apps/api/src/main.ts",
-      "use": "@vercel/node"
     }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "apps/api/src/main.ts"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "apps/web/$1"
-    }
-  ],
-  "env": {
-    "NEXT_PUBLIC_API_URL": "@next_public_api_url",
-    "DATABASE_URL": "@database_url",
-    "POSTGRES_URL": "@postgres_url",
-    "POSTGRES_URL_NON_POOLING": "@postgres_url_non_pooling",
-    "POSTGRES_USER": "@postgres_user",
-    "POSTGRES_HOST": "@postgres_host",
-    "POSTGRES_PASSWORD": "@postgres_password",
-    "POSTGRES_DATABASE": "@postgres_database",
-    "KV_REST_API_URL": "@kv_rest_api_url",
-    "KV_REST_API_TOKEN": "@kv_rest_api_token",
-    "QSTASH_TOKEN": "@qstash_token",
-    "QSTASH_CURRENT_SIGNING_KEY": "@qstash_current_signing_key",
-    "QSTASH_NEXT_SIGNING_KEY": "@qstash_next_signing_key"
-  }
+  ]
 }
