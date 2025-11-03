@@ -1,0 +1,154 @@
+receivers:
+  # OTLP gRPC 接收器
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+  # Prometheus 指标接收器
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'otel-collector'
+          static_configs:
+            - targets: ['localhost:8888']
+
+  # Jaeger 接收器
+  jaeger:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:14250
+      thrift_http:
+        endpoint: 0.0.0.0:14268
+
+  # Zipkin 接收器
+  zipkin:
+    endpoint: 0.0.0.0:9411
+
+processors:
+  # 批处理器
+  batch:
+    timeout: 1s
+    send_batch_size: 1024
+
+  # 内存限制器
+  memory_limiter:
+    limit_mib: 512
+    spike_limit_mib: 128
+    check_interval: 5s
+
+  # 资源处理器
+  resource:
+    attributes:
+      - key: environment
+        value: production
+        action: upsert
+      - key: service.name
+        value: wemaster
+        action: upsert
+
+  # 指标转换器
+  metricstransform:
+    transforms:
+      - include: "http.*"
+        action: update
+        new_name: "wemaster_$1"
+
+  # 属性处理器
+  attributes:
+    actions:
+      - key: tenant_id
+        action: hash
+      - key: user_id
+        action: hash
+
+  # 采样处理器
+  probabilistic_sampler:
+    sampling_percentage: 10
+
+  # 过滤处理器
+  filter:
+    metrics:
+      include:
+        match_type: regexp
+        metric_names:
+          - "http.*"
+          - "process.*"
+          - "runtime.*"
+    traces:
+      include:
+        match_type: regexp
+        attributes:
+          - key: service.name
+            value: "wemaster.*"
+
+exporters:
+  # Prometheus 导出器
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    namespace: "wemaster"
+    const_labels:
+      environment: "production"
+
+  # Jaeger 导出器
+  jaeger:
+    endpoint: jaeger:14250
+    tls:
+      insecure: true
+
+  # Loki 导出器
+  loki:
+    endpoint: "http://loki:3100/loki/api/v1/push"
+    labels:
+      job: "otel-collector"
+      service: "wemaster"
+
+  # 日志导出器
+  logging:
+    loglevel: info
+
+  # 文件导出器
+  file:
+    path: /tmp/otel-output.json
+
+extensions:
+  # 健康检查
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+  # 性能分析
+  pprof:
+    endpoint: 0.0.0.0:1777
+
+  # ZPages 调试
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+service:
+  extensions: [health_check, pprof, zpages]
+  pipelines:
+    # 指标管道
+    metrics:
+      receivers: [otlp, prometheus]
+      processors: [memory_limiter, batch, resource, metricstransform, attributes]
+      exporters: [prometheus, logging]
+
+    # 追踪管道
+    traces:
+      receivers: [otlp, jaeger, zipkin]
+      processors: [memory_limiter, batch, resource, attributes, filter, probabilistic_sampler]
+      exporters: [jaeger, logging]
+
+    # 日志管道
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resource, attributes, filter]
+      exporters: [loki, logging, file]
+
+  telemetry:
+    logs:
+      level: "info"
+    metrics:
+      address: 0.0.0.0:8888

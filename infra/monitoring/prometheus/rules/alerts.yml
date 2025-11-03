@@ -1,0 +1,229 @@
+groups:
+  - name: system_alerts
+    rules:
+      # CPU 使用率告警
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 80% for more than 5 minutes on instance {{ $labels.instance }}"
+
+      - alert: CriticalCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 95
+        for: 2m
+        labels:
+          severity: critical
+          service: system
+        annotations:
+          summary: "Critical CPU usage detected"
+          description: "CPU usage is above 95% for more than 2 minutes on instance {{ $labels.instance }}"
+
+      # 内存使用率告警
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is above 85% for more than 5 minutes on instance {{ $labels.instance }}"
+
+      - alert: CriticalMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+          service: system
+        annotations:
+          summary: "Critical memory usage detected"
+          description: "Memory usage is above 95% for more than 2 minutes on instance {{ $labels.instance }}"
+
+      # 磁盘空间告警
+      - alert: LowDiskSpace
+        expr: (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "Low disk space detected"
+          description: "Disk usage is above 85% on filesystem {{ $labels.mountpoint }} of instance {{ $labels.instance }}"
+
+      - alert: CriticalDiskSpace
+        expr: (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)) * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+          service: system
+        annotations:
+          summary: "Critical disk space detected"
+          description: "Disk usage is above 95% on filesystem {{ $labels.mountpoint }} of instance {{ $labels.instance }}"
+
+  - name: application_alerts
+    rules:
+      # WeMaster 后端服务告警
+      - alert: WeMasterBackendDown
+        expr: up{job="wemaster-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: wemaster-backend
+        annotations:
+          summary: "WeMaster backend service is down"
+          description: "WeMaster backend service has been down for more than 1 minute"
+
+      - alert: WeMasterBackendHighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="wemaster-backend"}[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: wemaster-backend
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is above 2 seconds for WeMaster backend"
+
+      - alert: WeMasterBackendHighErrorRate
+        expr: rate(http_requests_total{job="wemaster-backend",status=~"5.."}[5m]) / rate(http_requests_total{job="wemaster-backend"}[5m]) > 0.05
+        for: 3m
+        labels:
+          severity: critical
+          service: wemaster-backend
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is above 5% for WeMaster backend"
+
+      # WeMaster 前端服务告警
+      - alert: WeMasterFrontendDown
+        expr: up{job="wemaster-frontend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: wemaster-frontend
+        annotations:
+          summary: "WeMaster frontend service is down"
+          description: "WeMaster frontend service has been down for more than 1 minute"
+
+  - name: database_alerts
+    rules:
+      # PostgreSQL 告警
+      - alert: PostgreSQLDown
+        expr: up{job="postgres-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: postgresql
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL database has been down for more than 1 minute"
+
+      - alert: PostgreSQLHighConnections
+        expr: pg_stat_database_numbackends / pg_settings_max_connections * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: postgresql
+        annotations:
+          summary: "High PostgreSQL connections"
+          description: "PostgreSQL connection usage is above 80%"
+
+      - alert: PostgreSQLSlowQueries
+        expr: rate(pg_stat_statements_mean_time_seconds{datname!~"template.*"}[5m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: postgresql
+        annotations:
+          summary: "Slow PostgreSQL queries detected"
+          description: "Average query time is above 1 second"
+
+      # Redis 告警
+      - alert: RedisDown
+        expr: up{job="redis-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: redis
+        annotations:
+          summary: "Redis is down"
+          description: "Redis cache has been down for more than 1 minute"
+
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "High Redis memory usage"
+          description: "Redis memory usage is above 85%"
+
+  - name: business_alerts
+    rules:
+      # 业务指标告警
+      - alert: LowUserActivity
+        expr: rate(user_active_total[5m]) < 10
+        for: 10m
+        labels:
+          severity: warning
+          service: business
+        annotations:
+          summary: "Low user activity detected"
+          description: "User activity rate is below 10 users per minute for more than 10 minutes"
+
+      - alert: HighOrderFailureRate
+        expr: rate(order_failed_total[5m]) / rate(order_created_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+          service: business
+        annotations:
+          summary: "High order failure rate"
+          description: "Order failure rate is above 10%"
+
+      - alert: PaymentProcessingDelay
+        expr: histogram_quantile(0.95, rate(payment_processing_duration_seconds_bucket[5m])) > 30
+        for: 5m
+        labels:
+          severity: warning
+          service: business
+        annotations:
+          summary: "Payment processing delay"
+          description: "95th percentile payment processing time is above 30 seconds"
+
+  - name: infrastructure_alerts
+    rules:
+      # 容器告警
+      - alert: ContainerDown
+        expr: time() - container_last_seen > 300
+        for: 1m
+        labels:
+          severity: warning
+          service: containers
+        annotations:
+          summary: "Container is down"
+          description: "Container {{ $labels.name }} has been down for more than 5 minutes"
+
+      - alert: ContainerHighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total{name!=""}[5m]) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: containers
+        annotations:
+          summary: "Container high CPU usage"
+          description: "Container {{ $labels.name }} CPU usage is above 80%"
+
+      - alert: ContainerHighMemoryUsage
+        expr: container_memory_usage_bytes{name!=""} / container_spec_memory_limit_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: containers
+        annotations:
+          summary: "Container high memory usage"
+          description: "Container {{ $labels.name }} memory usage is above 85%"

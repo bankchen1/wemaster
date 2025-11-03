@@ -1,0 +1,367 @@
+{
+  "locale": "en-US",
+  "messages": {
+    "dashboard": {
+      "title": "Dashboard",
+      "welcome": "Welcome to WeMaster Admin Portal",
+      "kpi": {
+        "activeUsers": "Active Users",
+        "gmv": "GMV",
+        "orders": "Orders",
+        "refundRate": "Refund Rate",
+        "subscriptions": "Subscription MRR"
+      },
+      "realtimeAlerts": "Real-time Alerts",
+      "tenantMetrics": "Tenant Metrics",
+      "actions": {
+        "timeWindow": "Time Window",
+        "tenantSwitch": "Tenant Switch",
+        "exportReport": "Export Report"
+      }
+    },
+    "users": {
+      "title": "User Management",
+      "list": {
+        "title": "User List",
+        "table": {
+          "avatar": "Avatar",
+          "id": "ID",
+          "name": "Name",
+          "email": "Email",
+          "role": "Role",
+          "status": "Status",
+          "tenant": "Tenant",
+          "registeredAt": "Registered At"
+        },
+        "filters": {
+          "role": "Role",
+          "status": "Status",
+          "tenant": "Tenant",
+          "keyword": "Keyword",
+          "dateRange": "Date Range"
+        }
+      },
+      "detail": {
+        "title": "User Detail",
+        "tabs": {
+          "profile": "Profile",
+          "security": "Security",
+          "kyc": "KYC",
+          "devices": "Devices",
+          "audit": "Audit"
+        }
+      },
+      "forms": {
+        "createUser": "Create User",
+        "editUser": "Edit User",
+        "resetPassword": "Reset Password",
+        "assignRole": "Assign Role"
+      },
+      "modals": {
+        "disableUser": "Disable User",
+        "enableUser": "Enable User",
+        "approveKyc": "Approve KYC",
+        "rejectKyc": "Reject KYC"
+      }
+    },
+    "tutors": {
+      "title": "Tutor Management",
+      "list": {
+        "title": "Tutor List"
+      },
+      "detail": {
+        "title": "Tutor Detail",
+        "tabs": {
+          "profile": "Profile",
+          "schedule": "Schedule",
+          "courses": "Courses",
+          "earnings": "Earnings",
+          "messages": "Messages",
+          "ratings": "Ratings"
+        }
+      }
+    },
+    "students": {
+      "title": "Student Management",
+      "list": {
+        "title": "Student List"
+      },
+      "detail": {
+        "title": "Student Detail",
+        "tabs": {
+          "profile": "Profile",
+          "purchases": "Purchases",
+          "progress": "Progress",
+          "wallet": "Wallet",
+          "vip": "VIP",
+          "support": "Support"
+        }
+      }
+    },
+    "courses": {
+      "title": "Course Management",
+      "list": {
+        "title": "Course List"
+      },
+      "detail": {
+        "title": "Course Detail",
+        "tabs": {
+          "overview": "Overview",
+          "content": "Content",
+          "pricing": "Pricing",
+          "seo": "SEO",
+          "media": "Media",
+          "faq": "FAQ"
+        }
+      }
+    },
+    "offerings": {
+      "title": "Offering Management",
+      "list": {
+        "title": "Offering List"
+      },
+      "new": {
+        "title": "New Offering"
+      }
+    },
+    "sessions": {
+      "title": "Session Management",
+      "calendar": {
+        "title": "Calendar View"
+      },
+      "list": {
+        "title": "Session List"
+      },
+      "detail": {
+        "title": "Session Detail",
+        "tabs": {
+          "overview": "Overview",
+          "reschedule": "Reschedule",
+          "attendance": "Attendance",
+          "notes": "Notes",
+          "audit": "Audit"
+        }
+      }
+    },
+    "orders": {
+      "title": "Order Management",
+      "list": {
+        "title": "Order List"
+      },
+      "detail": {
+        "title": "Order Detail",
+        "tabs": {
+          "timeline": "Timeline",
+          "items": "Items",
+          "payment": "Payment",
+          "refund": "Refund",
+          "invoice": "Invoice",
+          "audit": "Audit"
+        }
+      }
+    },
+    "payments": {
+      "title": "Payment Management",
+      "transactions": {
+        "title": "Transactions"
+      },
+      "refunds": {
+        "title": "Refunds"
+      },
+      "reconciliation": {
+        "title": "Reconciliation"
+      }
+    },
+    "subscriptions": {
+      "title": "Subscription Management",
+      "plans": {
+        "title": "Plans"
+      },
+      "members": {
+        "title": "Members"
+      },
+      "invoices": {
+        "title": "Invoices"
+      }
+    },
+    "wallets": {
+      "title": "Wallet Management",
+      "accounts": {
+        "title": "Accounts"
+      },
+      "transactions": {
+        "title": "Transactions"
+      },
+      "payouts": {
+        "title": "Payouts"
+      }
+    },
+    "earnings": {
+      "title": "Earnings Management",
+      "overview": {
+        "title": "Overview"
+      },
+      "settlements": {
+        "title": "Settlements"
+      },
+      "payouts": {
+        "title": "Payouts"
+      }
+    },
+    "messages": {
+      "title": "Message Management",
+      "moderation": {
+        "title": "Moderation"
+      },
+      "reports": {
+        "title": "Reports"
+      }
+    },
+    "content": {
+      "title": "Content Management",
+      "articles": {
+        "title": "Articles"
+      },
+      "announcements": {
+        "title": "Announcements"
+      },
+      "faq": {
+        "title": "FAQ"
+      },
+      "assets": {
+        "title": "Assets"
+      }
+    },
+    "marketing": {
+      "title": "Marketing Management",
+      "coupons": {
+        "title": "Coupons"
+      },
+      "campaigns": {
+        "title": "Campaigns"
+      },
+      "abTests": {
+        "title": "AB Tests"
+      }
+    },
+    "analytics": {
+      "title": "Analytics",
+      "overview": {
+        "title": "Overview"
+      },
+      "funnel": {
+        "title": "Conversion Funnel"
+      },
+      "finance": {
+        "title": "Financial Reports"
+      }
+    },
+    "moderation": {
+      "title": "Moderation",
+      "queue": {
+        "title": "Review Queue"
+      },
+      "rules": {
+        "title": "Rules"
+      },
+      "blacklist": {
+        "title": "Blacklist"
+      }
+    },
+    "tenants": {
+      "title": "Tenant Management",
+      "list": {
+        "title": "Tenant List"
+      },
+      "detail": {
+        "title": "Tenant Detail",
+        "tabs": {
+          "branding": "Branding",
+          "pricing": "Pricing",
+          "fees": "Fees",
+          "policies": "Policies",
+          "featureFlags": "Feature Flags"
+        }
+      }
+    },
+    "integrations": {
+      "title": "Integrations",
+      "stripe": {
+        "title": "Stripe"
+      },
+      "storage": {
+        "title": "Storage"
+      },
+      "livekit": {
+        "title": "LiveKit"
+      },
+      "webhooks": {
+        "title": "Webhooks"
+      }
+    },
+    "ops": {
+      "title": "Operations",
+      "cache": {
+        "title": "Cache"
+      },
+      "queues": {
+        "title": "Queues"
+      },
+      "scheduler": {
+        "title": "Scheduler"
+      },
+      "health": {
+        "title": "Health Check"
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "rbac": {
+        "title": "RBAC"
+      },
+      "featureFlags": {
+        "title": "Feature Flags"
+      },
+      "dictionaries": {
+        "title": "Dictionaries"
+      }
+    },
+    "audit": {
+      "title": "Audit Logs",
+      "logs": {
+        "title": "Logs"
+      }
+    },
+    "common": {
+      "actions": {
+        "create": "Create",
+        "edit": "Edit",
+        "delete": "Delete",
+        "view": "View",
+        "search": "Search",
+        "filter": "Filter",
+        "export": "Export",
+        "refresh": "Refresh",
+        "save": "Save",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "reset": "Reset"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "suspended": "Suspended",
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "draft": "Draft",
+        "published": "Published"
+      },
+      "roles": {
+        "admin": "Admin",
+        "tutor": "Tutor",
+        "student": "Student"
+      }
+    }
+  }
+}

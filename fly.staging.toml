@@ -1,0 +1,38 @@
+app = "wemaster-api-staging"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "staging"
+  PORT = "8080"
+  DATABASE_URL = "${DATABASE_URL}"
+  REDIS_URL = "${REDIS_URL}"
+  JWT_SECRET = "${JWT_SECRET}"
+  STRIPE_SECRET_KEY = "${STRIPE_SECRET_KEY}"
+  STRIPE_WEBHOOK_SECRET = "${STRIPE_WEBHOOK_SECRET}"
+  AWS_ACCESS_KEY_ID = "${AWS_ACCESS_KEY_ID}"
+  AWS_SECRET_ACCESS_KEY = "${AWS_SECRET_ACCESS_KEY}"
+  CONFIG_SERVICE_TOKEN = "${CONFIG_SERVICE_TOKEN}"
+  DEFAULT_TENANT = "wemaster_staging"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+[[http_service.checks]]
+  interval = "10s"
+  timeout = "2s"
+  grace_period = "5s"
+  method = "GET"
+  path = "/healthz"
+
+[deploy]
+  strategy = "rolling"
+
+[experimental]
+  cmd = ["npm", "run", "start:prod"]

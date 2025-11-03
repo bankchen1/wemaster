@@ -1,0 +1,42 @@
+metric,value,unit,status
+test_duration,60,s,PASS
+total_requests,143,count,PASS
+requests_per_second,2.38,rps,PASS
+p95_response_time,1200,ms,FAIL
+avg_response_time,450,ms,PASS
+error_rate,15.38,%,FAIL
+failed_requests,22,count,PASS
+successful_requests,121,count,PASS
+data_sent,45.2,KB,PASS
+data_received,125.8,KB,PASS
+vus_max,5,count,PASS
+vus_avg,5,count,PASS
+
+# 场景测试结果
+scenario,success_rate,avg_response_time,status
+login,85.5%,380ms,PARTIAL
+course_search,80.2%,520ms,PARTIAL
+order_creation,75.0%,650ms,PARTIAL
+payment_webhook,90.0%,280ms,PASS
+reconciliation,95.0%,220ms,PASS
+
+# 系统资源使用
+system_resource,value,unit,status
+database_response_time,1396,ms,FAIL
+redis_response_time,4,ms,PASS
+memory_usage,62,%,PASS
+cpu_usage,45,%,PASS
+uptime,42501,s,PASS
+
+# 错误分析
+error_type,count,percentage,severity
+rate_limit_429,18,12.59%,WARNING
+not_found_404,3,2.10%,INFO
+server_error_500,1,0.70%,ERROR
+
+# 性能目标达成情况
+target,actual,threshold,achieved
+p95_response_time,<500ms,1200ms,NO
+error_rate,<0.5%,15.38%,NO
+throughput,>1rps,2.38rps,YES
+availability,>99%,84.62%,NO

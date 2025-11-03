@@ -1,0 +1,9 @@
+[submodule "wemaster-core"]
+	path = wemaster-core
+	url = https://github.com/bankchen1/wemaster-core.git
+[submodule "wemaster-nest"]
+	path = wemaster-nest
+	url = https://github.com/bankchen1/wemaster-nest.git
+[submodule "wemaster-app-flutter"]
+	path = wemaster-app-flutter
+	url = https://github.com/bankchen1/wemaster-app-flutter.git

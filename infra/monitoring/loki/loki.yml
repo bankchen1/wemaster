@@ -1,0 +1,107 @@
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+
+ingester:
+  lifecycler:
+    address: 127.0.0.1
+    ring:
+      kvstore:
+        store: inmemory
+      replication_factor: 1
+    final_sleep: 0s
+  chunk_idle_period: 1h
+  max_chunk_age: 1h
+  chunk_target_size: 1048576
+  chunk_retain_period: 30s
+  max_transfer_retries: 0
+
+schema_config:
+  configs:
+    - from: 2020-10-24
+      store: boltdb-shipper
+      object_store: filesystem
+      schema: v11
+      index:
+        prefix: index_
+        period: 24h
+
+storage_config:
+  boltdb_shipper:
+    active_index_directory: /loki/boltdb-shipper-active
+    cache_location: /loki/boltdb-shipper-cache
+    shared_store: filesystem
+  filesystem:
+    directory: /loki/chunks
+
+limits_config:
+  enforce_metric_name: false
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h
+  ingestion_rate_mb: 16
+  ingestion_burst_size_mb: 32
+  per_stream_rate_limit: 16MB
+  per_stream_rate_limit_burst: 32MB
+
+chunk_store_config:
+  max_look_back_period: 0s
+
+table_manager:
+  retention_deletes_enabled: false
+  retention_period: 0s
+
+query_range:
+  results_cache:
+    cache:
+      embedded_cache:
+        enabled: true
+        max_size_mb: 100
+
+frontend:
+  max_outstanding_per_tenant: 2048
+  compress_responses: true
+
+querier:
+  max_concurrent: 10
+
+# 日志解析规则
+ruler:
+  alertmanager_url: http://localhost:9093
+  enable_alertmanager_v2: true
+  enable_api: true
+  external_url: http://localhost:3100
+  ring:
+    kvstore:
+      store: inmemory
+  rule_path: /loki/rules
+  storage:
+    type: local
+    local:
+      directory: /loki/rules
+
+# 多租户配置
+auth:
+  enabled: false
+
+# 限制配置
+limits_config:
+  max_query_length: 1000
+  max_query_parallelism: 32
+  max_streams_per_user: 0
+  max_global_streams_per_user: 5000
+  max_label_names_per_series: 30
+  max_label_value_length: 2048
+  max_label_name_length: 1024
+  max_entries_limit_per_query: 5000
+  max_query_look_back: 0s
+  max_cache_freshness_per_query: 10m
+  retention_period: 744h  # 31 days
+  split_queries_by_interval: 30m
+  ingestion_rate_mb: 4
+  ingestion_burst_size_mb: 8
+  per_stream_rate_limit: 3MB
+  per_stream_rate_limit_burst: 6MB
+  max_line_size: 256KB
+  max_line_size_truncate: true

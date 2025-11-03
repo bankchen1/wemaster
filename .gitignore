@@ -1,46 +1,51 @@
-# dependencies
-node_modules
+# Dependencies
+node_modules/
 .pnp
 .pnp.js
 
-# testing
-coverage
-
-# next.js
+# Build outputs
 .next/
 out/
-build
-dist
+build/
+dist/
+.turbo/
 
-# misc
-.DS_Store
-*.pem
-
-# debug
+# Logs and runtime files
+logs/
+*.log
+*.tmp
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
+# Environment variables
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env.*
+!.env.example
+!.env.example
+!.env.*.example
+backups/
 
-# vercel
-.vercel
+# Hosting
+.vercel/
 
-# typescript
+# TypeScript
 *.tsbuildinfo
 next-env.d.ts
-
-# IDE
-.idea
-.vscode
 
 # Prisma
 prisma/*.db
 prisma/migrations/
 
-.vercel
+# OS / Editor artifacts
+.DS_Store
+.idea/
+.vscode/
+wemaster-admin/.env*
+wemaster-admin/.vite/
+# Test outputs
+performance-tests/results/

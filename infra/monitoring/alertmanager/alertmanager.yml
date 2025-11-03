@@ -1,0 +1,251 @@
+global:
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'alerts@wemaster.com'
+  smtp_auth_username: 'alerts@wemaster.com'
+  smtp_auth_password: 'your-app-password'
+  slack_api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+
+# 路由配置
+route:
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 12h
+  receiver: 'default'
+  routes:
+    # 关键告警立即发送
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 5s
+      repeat_interval: 30m
+      continue: true
+
+    # 系统告警
+    - match:
+        service: system
+      receiver: 'system-alerts'
+      group_wait: 30s
+      repeat_interval: 4h
+
+    # 应用告警
+    - match:
+        service: wemaster-backend
+      receiver: 'application-alerts'
+      group_wait: 20s
+      repeat_interval: 2h
+
+    - match:
+        service: wemaster-frontend
+      receiver: 'application-alerts'
+      group_wait: 20s
+      repeat_interval: 2h
+
+    # 数据库告警
+    - match:
+        service: postgresql
+      receiver: 'database-alerts'
+      group_wait: 15s
+      repeat_interval: 1h
+
+    - match:
+        service: redis
+      receiver: 'database-alerts'
+      group_wait: 15s
+      repeat_interval: 1h
+
+    # 业务告警
+    - match:
+        service: business
+      receiver: 'business-alerts'
+      group_wait: 1m
+      repeat_interval: 6h
+
+# 抑制规则
+inhibit_rules:
+  # 如果服务已宕机，抑制该服务的其他告警
+  - source_match:
+      alertname: 'WeMasterBackendDown'
+    target_match:
+      service: 'wemaster-backend'
+    equal: ['instance']
+
+  - source_match:
+      alertname: 'WeMasterFrontendDown'
+    target_match:
+      service: 'wemaster-frontend'
+    equal: ['instance']
+
+  # 如果数据库已宕机，抑制数据库相关的其他告警
+  - source_match:
+      alertname: 'PostgreSQLDown'
+    target_match:
+      service: 'postgresql'
+    equal: ['instance']
+
+  - source_match:
+      alertname: 'RedisDown'
+    target_match:
+      service: 'redis'
+    equal: ['instance']
+
+# 告警接收器
+receivers:
+  # 默认接收器
+  - name: 'default'
+    email_configs:
+      - to: 'team@wemaster.com'
+        subject: '[WeMaster] {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          告警: {{ .Annotations.summary }}
+          描述: {{ .Annotations.description }}
+          时间: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          标签: {{ range .Labels.SortedPairs }}{{ .Name }}={{ .Value }} {{ end }}
+          {{ end }}
+    slack_configs:
+      - channel: '#alerts'
+        title: 'WeMaster Alert'
+        text: |
+          {{ range .Alerts }}
+          *告警:* {{ .Annotations.summary }}
+          *描述:* {{ .Annotations.description }}
+          *时间:* {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          *标签:* {{ range .Labels.SortedPairs }}{{ .Name }}={{ .Value }} {{ end }}
+          {{ end }}
+
+  # 关键告警接收器
+  - name: 'critical-alerts'
+    email_configs:
+      - to: 'oncall@wemaster.com,team@wemaster.com'
+        subject: '[CRITICAL] WeMaster - {{ .GroupLabels.alertname }}'
+        body: |
+          🚨 关键告警 🚨
+          
+          {{ range .Alerts }}
+          告警: {{ .Annotations.summary }}
+          描述: {{ .Annotations.description }}
+          时间: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          严重程度: {{ .Labels.severity }}
+          服务: {{ .Labels.service }}
+          实例: {{ .Labels.instance }}
+          
+          需要立即处理！
+          {{ end }}
+    slack_configs:
+      - channel: '#critical-alerts'
+        title: '🚨 CRITICAL ALERT 🚨'
+        text: |
+          {{ range .Alerts }}
+          *告警:* {{ .Annotations.summary }}
+          *描述:* {{ .Annotations.description }}
+          *时间:* {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          *严重程度:* {{ .Labels.severity }}
+          *服务:* {{ .Labels.service }}
+          *实例:* {{ .Labels.instance }}
+          
+          需要立即处理！
+          {{ end }}
+    webhook_configs:
+      - url: 'http://localhost:8080/webhook/critical'
+        send_resolved: true
+
+  # 系统告警接收器
+  - name: 'system-alerts'
+    email_configs:
+      - to: 'ops@wemaster.com'
+        subject: '[System] WeMaster - {{ .GroupLabels.alertname }}'
+        body: |
+          系统告警通知
+          
+          {{ range .Alerts }}
+          告警: {{ .Annotations.summary }}
+          描述: {{ .Annotations.description }}
+          时间: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          实例: {{ .Labels.instance }}
+          {{ end }}
+    slack_configs:
+      - channel: '#system-alerts'
+        title: 'System Alert'
+        text: |
+          {{ range .Alerts }}
+          *告警:* {{ .Annotations.summary }}
+          *描述:* {{ .Annotations.description }}
+          *实例:* {{ .Labels.instance }}
+          {{ end }}
+
+  # 应用告警接收器
+  - name: 'application-alerts'
+    email_configs:
+      - to: 'dev@wemaster.com'
+        subject: '[Application] WeMaster - {{ .GroupLabels.alertname }}'
+        body: |
+          应用告警通知
+          
+          {{ range .Alerts }}
+          告警: {{ .Annotations.summary }}
+          描述: {{ .Annotations.description }}
+          时间: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          服务: {{ .Labels.service }}
+          {{ end }}
+    slack_configs:
+      - channel: '#app-alerts'
+        title: 'Application Alert'
+        text: |
+          {{ range .Alerts }}
+          *告警:* {{ .Annotations.summary }}
+          *描述:* {{ .Annotations.description }}
+          *服务:* {{ .Labels.service }}
+          {{ end }}
+
+  # 数据库告警接收器
+  - name: 'database-alerts'
+    email_configs:
+      - to: 'dba@wemaster.com'
+        subject: '[Database] WeMaster - {{ .GroupLabels.alertname }}'
+        body: |
+          数据库告警通知
+          
+          {{ range .Alerts }}
+          告警: {{ .Annotations.summary }}
+          描述: {{ .Annotations.description }}
+          时间: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          服务: {{ .Labels.service }}
+          {{ end }}
+    slack_configs:
+      - channel: '#db-alerts'
+        title: 'Database Alert'
+        text: |
+          {{ range .Alerts }}
+          *告警:* {{ .Annotations.summary }}
+          *描述:* {{ .Annotations.description }}
+          *服务:* {{ .Labels.service }}
+          {{ end }}
+
+  # 业务告警接收器
+  - name: 'business-alerts'
+    email_configs:
+      - to: 'business@wemaster.com,product@wemaster.com'
+        subject: '[Business] WeMaster - {{ .GroupLabels.alertname }}'
+        body: |
+          业务告警通知
+          
+          {{ range .Alerts }}
+          告警: {{ .Annotations.summary }}
+          描述: {{ .Annotations.description }}
+          时间: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          服务: {{ .Labels.service }}
+          {{ end }}
+    slack_configs:
+      - channel: '#business-alerts'
+        title: 'Business Alert'
+        text: |
+          {{ range .Alerts }}
+          *告警:* {{ .Annotations.summary }}
+          *描述:* {{ .Annotations.description }}
+          *服务:* {{ .Labels.service }}
+          {{ end }}
+
+# 时间模板
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'

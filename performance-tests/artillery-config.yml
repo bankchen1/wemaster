@@ -1,0 +1,141 @@
+config:
+  target: 'http://localhost:3002'
+  phases:
+    - duration: 60
+      arrivalRate: 10
+      name: "Warm up"
+    - duration: 120
+      arrivalRate: 50
+      name: "Ramp up load"
+    - duration: 300
+      arrivalRate: 100
+      name: "Sustained load"
+    - duration: 120
+      arrivalRate: 200
+      name: "High load"
+    - duration: 300
+      arrivalRate: 300
+      name: "Peak load"
+    - duration: 120
+      arrivalRate: 500
+      name: "Stress test"
+    - duration: 60
+      arrivalRate: 10
+      name: "Cool down"
+
+scenarios:
+  - name: "API Endpoints Load Test"
+    weight: 70
+    flow:
+      # 认证流程
+      - post:
+          url: "/api/v1/auth/login"
+          json:
+            email: "student1@test.com"
+            password: "password123"
+          capture:
+            - json: "$.access_token"
+              as: "authToken"
+      
+      # 获取课程列表
+      - get:
+          url: "/api/v1/offerings"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+      
+      # 获取用户信息
+      - get:
+          url: "/api/v1/users/profile"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+      
+      # 获取订单列表
+      - get:
+          url: "/api/v1/orders"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+      
+      # 获取社区统计
+      - get:
+          url: "/api/v1/community/statistics"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+      
+      # 随机创建订单 (30%概率)
+      - think: 1
+      - loop:
+          - post:
+              url: "/api/v1/orders/draft"
+              headers:
+                Authorization: "Bearer {{ authToken }}"
+              json:
+                offeringId: "test-offering-id"
+                variantId: "test-variant-id"
+              expect:
+                - statusCode: 200
+        count: 1
+        ifTrue: "Math.random() < 0.3"
+
+  - name: "Public API Test"
+    weight: 20
+    flow:
+      # 公开课程接口
+      - get:
+          url: "/api/v1/offerings"
+          expect:
+            - statusCode: 200
+      
+      # 健康检查
+      - get:
+          url: "/healthz"
+          expect:
+            - statusCode: 200
+      
+      # 系统指标
+      - get:
+          url: "/metrics"
+          expect:
+            - statusCode: 200
+
+  - name: "Database Stress Test"
+    weight: 10
+    flow:
+      # 复杂查询测试
+      - get:
+          url: "/api/v1/orders/statistics"
+          expect:
+            - statusCode: 200
+      
+      # 分页查询测试
+      - loop:
+          - get:
+              url: "/api/v1/community/posts?page={{ $loopCount }}&limit=20"
+              expect:
+                - statusCode: 200
+        count: 5
+      
+      # 搜索测试
+      - get:
+          url: "/api/v1/offerings?search=test&limit=50"
+          expect:
+            - statusCode: 200
+
+processor:
+  - template: "randomString"
+    params:
+      length: 10
+    as: "randomId"
+  
+  - template: "randomNumber"
+    params:
+      min: 1
+      max: 1000
+    as: "randomNumber"

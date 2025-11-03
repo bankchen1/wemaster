@@ -1,0 +1,99 @@
+apiVersion: 1
+
+datasources:
+  # Prometheus 数据源
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+    jsonData:
+      timeInterval: "15s"
+      queryTimeout: "60s"
+      httpMethod: "POST"
+    secureJsonData: {}
+
+  # Loki 数据源
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    editable: true
+    jsonData:
+      maxLines: 1000
+      derivedFields:
+        - datasourceUid: jaeger
+          matcherRegex: "trace_id=(?P<trace_id>[a-f0-9]{32})"
+          name: TraceID
+          url: "$${__value.raw}"
+          urlDisplayLabel: "View Trace"
+    secureJsonData: {}
+
+  # Jaeger 数据源
+  - name: Jaeger
+    type: jaeger
+    access: proxy
+    url: http://jaeger:16686
+    editable: true
+    jsonData:
+      tracesToLogs:
+        datasourceUid: loki
+        tags: ['job', 'instance', 'service', 'trace_id']
+        mappedTags: [
+          { key: 'service', value: 'service' }
+        ]
+        mapTagNamesEnabled: false
+        spanStartTimeShift: '1h'
+        spanEndTimeShift: '1h'
+        filterByTraceID: false
+        filterBySpanID: false
+    secureJsonData: {}
+
+  # OpenTelemetry 数据源
+  - name: OpenTelemetry
+    type: prometheus
+    access: proxy
+    url: http://otel-collector:8889
+    editable: true
+    jsonData:
+      timeInterval: "15s"
+      queryTimeout: "60s"
+      httpMethod: "POST"
+    secureJsonData: {}
+
+  # Node Exporter 数据源
+  - name: Node Exporter
+    type: prometheus
+    access: proxy
+    url: http://node-exporter:9100
+    editable: true
+    jsonData:
+      timeInterval: "15s"
+      queryTimeout: "60s"
+      httpMethod: "POST"
+    secureJsonData: {}
+
+  # PostgreSQL Exporter 数据源
+  - name: PostgreSQL Exporter
+    type: prometheus
+    access: proxy
+    url: http://postgres-exporter:9187
+    editable: true
+    jsonData:
+      timeInterval: "15s"
+      queryTimeout: "60s"
+      httpMethod: "POST"
+    secureJsonData: {}
+
+  # Redis Exporter 数据源
+  - name: Redis Exporter
+    type: prometheus
+    access: proxy
+    url: http://redis-exporter:9121
+    editable: true
+    jsonData:
+      timeInterval: "15s"
+      queryTimeout: "60s"
+      httpMethod: "POST"
+    secureJsonData: {}

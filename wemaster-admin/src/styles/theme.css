@@ -1,0 +1,47 @@
+/* Light theme */
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+  transition: background-color, color 0.3s ease;
+}
+
+/* Dark theme */
+html[data-theme='dark'], body[data-theme='dark'] {
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+}
+
+/* Element Plus theme override */
+:root {
+  --el-color-primary: var(--color-primary);
+  --el-color-success: var(--color-success);
+  --el-color-warning: var(--color-warning);
+  --el-color-danger: var(--color-danger);
+  --el-color-info: var(--color-info);
+  
+  --el-bg-color: var(--bg-container);
+  --el-bg-color-page: var(--bg-body);
+  --el-text-color-primary: var(--text-primary);
+  --el-text-color-regular: var(--text-regular);
+  --el-text-color-secondary: var(--text-secondary);
+  --el-text-color-placeholder: var(--text-placeholder);
+  
+  --el-border-color: var(--border-base);
+  --el-border-color-light: var(--border-light);
+  --el-border-color-lighter: var(--border-lighter);
+  --el-border-color-lightest: var(--border-lightest);
+  
+  --el-border-radius-base: var(--border-radius-base);
+  --el-border-radius-small: var(--border-radius-small);
+  --el-border-radius-large: var(--border-radius-large);
+  
+  --el-font-size-extra-large: var(--font-size-extra-large);
+  --el-font-size-large: var(--font-size-large);
+  --el-font-size-medium: var(--font-size-base);
+  --el-font-size-base: var(--font-size-base);
+  --el-font-size-small: var(--font-size-small);
+  --el-font-size-extra-small: var(--font-size-extra-small);
+}

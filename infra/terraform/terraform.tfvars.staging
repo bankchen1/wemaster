@@ -1,0 +1,42 @@
+# 复制此文件为 terraform.tfvars 并填入实际值
+# 注意：terraform.tfvars 已添加到 .gitignore，请勿提交包含敏感信息的文件
+
+# Vercel API Token
+# 获取方式：https://vercel.com/account/tokens
+vercel_api_token = "your_vercel_api_token_here"
+
+# Cloudflare API Token
+# 获取方式：https://dash.cloudflare.com/profile/api-tokens
+# 需要权限：Zone:Zone:Read, Zone:DNS:Edit, Zone:Page Rules:Edit, Account:Cloudflare Pages:Edit
+cloudflare_api_token = "your_cloudflare_api_token_here"
+
+# Cloudflare Account ID
+# 获取方式：https://dash.cloudflare.com/ -> 右侧边栏查看
+cloudflare_account_id = "your_cloudflare_account_id_here"
+
+# Fly.io API Token
+# 获取方式：fly auth token
+fly_api_token = "your_fly_api_token_here"
+
+# Neon Database API Key
+# 获取方式：https://neon.tech/docs/manage/api-keys
+neon_api_key = "your_neon_api_key_here"
+
+# Upstash Redis Credentials
+# 获取方式：https://console.upstash.com/login
+upstash_email = "your_upstash_email@example.com"
+upstash_api_key = "your_upstash_api_key_here"
+
+# AWS Credentials for R2 Storage
+# 获取方式：https://console.aws.amazon.com/iam/
+aws_access_key = "your_aws_access_key_here"
+aws_secret_key = "your_aws_secret_key_here"
+
+# Doppler API Token
+# 获取方式：https://console.doppler.com/workplace/user-settings/access-tokens
+doppler_token = "your_doppler_token_here"
+
+# Project Configuration
+project_name = "wemaster"
+environment = "staging"
+domain_name = "staging.wemaster.dev"

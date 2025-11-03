@@ -1,0 +1,160 @@
+groups:
+  - name: wemaster.rules
+    rules:
+      # 应用可用性告警
+      - alert: ApplicationDown
+        expr: up{job="wemaster-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: wemaster-api
+        annotations:
+          summary: "WeMaster API is down"
+          description: "WeMaster API has been down for more than 1 minute."
+
+      # 高错误率告警
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+          service: wemaster-api
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} for the last 5 minutes."
+
+      # 响应时间告警
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 2m
+        labels:
+          severity: warning
+          service: wemaster-api
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is {{ $value }}s."
+
+      # 内存使用告警
+      - alert: HighMemoryUsage
+        expr: (process_resident_memory_bytes / 1024 / 1024) > 512
+        for: 5m
+        labels:
+          severity: warning
+          service: wemaster-api
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value }}MB."
+
+      # CPU 使用告警
+      - alert: HighCPUUsage
+        expr: rate(process_cpu_seconds_total[5m]) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: wemaster-api
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value }}%."
+
+      # 数据库连接告警
+      - alert: DatabaseConnectionHigh
+        expr: pg_stat_activity_count > 80
+        for: 2m
+        labels:
+          severity: warning
+          service: postgres
+        annotations:
+          summary: "High database connections"
+          description: "Database has {{ $value }} active connections."
+
+      # Redis 连接告警
+      - alert: RedisConnectionHigh
+        expr: redis_connected_clients > 50
+        for: 2m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "High Redis connections"
+          description: "Redis has {{ $value }} connected clients."
+
+      # 磁盘空间告警
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 20
+        for: 5m
+        labels:
+          severity: critical
+          service: system
+        annotations:
+          summary: "Low disk space"
+          description: "Disk space is {{ $value }}% full."
+
+      # Uptime 探针失败告警
+      - alert: UptimeProbeFailure
+        expr: probe_success == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: uptime
+        annotations:
+          summary: "Uptime probe failed"
+          description: "Probe {{ $labels.instance }} has been failing for 2 minutes."
+
+  - name: security.rules
+    rules:
+      # 异常登录尝试
+      - alert: SuspiciousLoginActivity
+        expr: rate(login_attempts_total{status="failed"}[5m]) > 10
+        for: 1m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "Suspicious login activity detected"
+          description: "High rate of failed login attempts: {{ $value }} per second."
+
+      # API 限流触发
+      - alert: RateLimitTriggered
+        expr: rate(http_requests_total{status="429"}[5m]) > 5
+        for: 2m
+        labels:
+          severity: info
+          category: security
+        annotations:
+          summary: "Rate limiting triggered"
+          description: "Rate limiting is being triggered frequently: {{ $value }} requests per second."
+
+  - name: business.rules
+    rules:
+      # 订单创建失败
+      - alert: OrderCreationFailures
+        expr: rate(order_creation_failures_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "High order creation failures"
+          description: "Order creation failure rate is {{ $value }} per second."
+
+      # 支付失败率
+      - alert: HighPaymentFailureRate
+        expr: rate(payment_failures_total[5m]) / rate(payment_attempts_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "High payment failure rate"
+          description: "Payment failure rate is {{ $value | humanizePercentage }}."
+
+      # 用户注册异常
+      - alert: UserRegistrationAnomaly
+        expr: rate(user_registrations_total[5m]) > 100
+        for: 5m
+        labels:
+          severity: info
+          category: business
+        annotations:
+          summary: "Unusual user registration activity"
+          description: "User registration rate is unusually high: {{ $value }} per second."

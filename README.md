@@ -1,123 +1,82 @@
-# WeMaster - 在线教育平台
+# WeMaster 平台
 
-WeMaster 是一个现代化的在线教育平台，提供实时直播课堂、支付系统和导师管理功能。
+WeMaster 是一个现代化的在线教育平台，连接学生与专业导师，提供直播课堂、个性化课程、支付结算与移动端学习体验。本仓库用来统一管理多栈项目，并将各栈代码迁移到独立的子仓库，便于单独部署与协同开发。
 
-## 主要功能
+## 核心功能概览
 
-- 实时直播课堂
-  - WebRTC 视频会议
-  - 实时聊天
-  - 互动白板
-  - 课堂录制
-
-- 支付系统
-  - 课程支付
-  - 退款处理
-  - 导师提现
-  - 收入统计
-
-- 导师管理
-  - 账户验证
-  - 课程管理
-  - 收入管理
-  - 提现管理
+- 实时课堂：WebRTC 直播、实时聊天、互动白板与录制
+- 支付系统：课程支付、退款处理、导师提现与收入统计
+- 导师中心：身份验证、课程管理、收益/提现管理
+- 运营配套：VIP 订阅、社区互动、通知与监控告警
 
 ## 技术栈
 
-### 前端
-- Next.js
-- React
-- TypeScript
-- Zustand
-- TailwindCSS
-- LiveKit Client
+- **前端 (wemaster-core)**：Next.js、React、TypeScript、TailwindCSS、Zustand、Stripe
+- **后端 (wemaster-nest)**：NestJS、TypeScript、PostgreSQL、Prisma、Redis、Stripe
+- **移动端 (wemaster-app-flutter)**：Flutter、Riverpod、GoRouter、Socket.IO、Agora、Stripe
 
-### 后端
-- NestJS
-- TypeScript
-- PostgreSQL
-- Prisma
-- LiveKit Server
-- Stripe
+更多细节可查阅 `AGENTS.md`。
 
-## 开发环境设置
+## 仓库结构
 
-1. 克隆仓库
+```
+wemaster/                # 主仓库（当前项目）
+├── wemaster-core/       # Next.js 子仓库 (Git submodule)
+├── wemaster-nest/       # NestJS 子仓库 (Git submodule)
+└── wemaster-app-flutter/# Flutter 子仓库 (Git submodule)
+```
+
+- 主仓库管理统一运维脚本、文档、基础设施配置等资源。
+- 各子目录是独立 Git 仓库，通过 Git Submodule 方式关联。
+
+## 克隆与初始化
+
 ```bash
 git clone https://github.com/bankchen1/wemaster.git
 cd wemaster
+git submodule update --init --recursive
 ```
 
-2. 安装依赖
-```bash
-# 安装前端依赖
-cd apps/web
-npm install
-
-# 安装后端依赖
-cd ../api
-npm install
-```
-
-3. 环境变量配置
-```bash
-# 前端环境变量
-cp apps/web/.env.example apps/web/.env.local
-
-# 后端环境变量
-cp apps/api/.env.example apps/api/.env
-```
-
-4. 启动开发服务器
-```bash
-# 启动前端
-cd apps/web
-npm run dev
-
-# 启动后端
-cd ../api
-npm run start:dev
-```
-
-## 部署
-
-### 前端部署 (Vercel)
-1. Fork 此仓库
-2. 在 Vercel 中导入项目
-3. 配置环境变量
-4. 部署
-
-### 后端部署 (Digital Ocean)
-1. 创建 App Platform 应用
-2. 连接 GitHub 仓库
-3. 配置环境变量
-4. 部署
-
-## 测试
+如需同步最新子仓库提交：
 
 ```bash
-# 运行前端测试
-cd apps/web
-npm test
-
-# 运行后端测试
-cd ../api
-npm test
+git pull --recurse-submodules
+git submodule update --recursive --remote
 ```
 
-## API 文档
+## 子仓库快捷指引
 
-API 文档使用 Swagger 生成，可在开发环境中访问：
-- http://localhost:3000/api/docs
+- `wemaster-core`：Next.js 前端。开发命令见该目录下 `README.md` 或 `AGENTS.md`。
+- `wemaster-nest`：NestJS 后端。含 Prisma、Redis、Stripe 等配套，支持多租户与监控。
+- `wemaster-app-flutter`：Flutter 移动端。现已初始化为独立仓库并推送到远程。
 
-## 贡献指南
+对某个子仓库的改动，需要在该子目录内单独提交并推送：
 
-1. Fork 仓库
-2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 创建 Pull Request
+```bash
+cd wemaster-nest
+git status
+git commit -am "feat: ..."
+git push origin <branch>
+```
+
+随后回到主仓库更新子模块引用：
+
+```bash
+cd ..
+git add wemaster-nest
+git commit -m "chore: bump wemaster-nest submodule"
+git push origin main
+```
+
+## 常见任务
+
+- 主仓库脚本：`scripts/`、`infra/`、`deploy-*.sh` 等。
+- 文档与交付材料：根目录下的各类 `*.md` 文件。
+- 环境变量样例：请参考各子仓库内的 `.env.example`。
+
+更多运维与开发流程，请参考 `AGENTS.md`、`DEPLOY_PLAYBOOK.md` 等文档。
 
 ## 许可证
 
-[MIT License](LICENSE)
+默认遵循原项目的 MIT License（如有更新，请以实际 LICENSE 文件为准）。
+

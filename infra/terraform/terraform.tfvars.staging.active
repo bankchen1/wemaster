@@ -1,0 +1,33 @@
+# WeMaster Staging 环境配置
+# 自动生成的一键部署配置
+
+# Vercel API Token
+vercel_api_token = "vercel_test_token_placeholder"
+
+# Cloudflare API Token
+cloudflare_api_token = "cloudflare_test_token_placeholder"
+
+# Cloudflare Account ID
+cloudflare_account_id = "test_account_id_placeholder"
+
+# Fly.io API Token
+fly_api_token = "fly_test_token_placeholder"
+
+# Neon Database API Key
+neon_api_key = "neon_test_key_placeholder"
+
+# Upstash Redis Credentials
+upstash_email = "test@wemaster.dev"
+upstash_api_key = "upstash_test_key_placeholder"
+
+# AWS Credentials for R2 Storage
+aws_access_key = "AKIATEST1234567890ABC"
+aws_secret_key = "test_secret_key_placeholder"
+
+# Doppler API Token
+doppler_token = "doppler_v1_dpct_1234567890abcdef1234567890abcdef"
+
+# Project Configuration
+project_name = "wemaster"
+environment = "staging"
+domain_name = "staging.wemaster.dev"

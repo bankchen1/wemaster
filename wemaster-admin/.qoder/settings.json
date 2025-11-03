@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "ask": [
+      "Read(!/volumes/bankchen/wemaster/wemaster-admin/**)",
+      "Edit(!/volumes/bankchen/wemaster/wemaster-admin/**)"
+    ],
+    "allow": [
+      "Read(/volumes/bankchen/wemaster/wemaster-admin/**)",
+      "Edit(/volumes/bankchen/wemaster/wemaster-admin/**)"
+    ]
+  },
+  "memoryImport": {},
+  "monitoring": {}
+}

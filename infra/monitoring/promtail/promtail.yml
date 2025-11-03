@@ -1,0 +1,259 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # 系统日志
+  - job_name: system
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: syslog
+          __path__: /var/log/syslog
+    pipeline_stages:
+      - regex:
+          expression: '(?P<timestamp>\w+\s+\d+\s+\d+:\d+:\d+)\s+(?P<hostname>\w+)\s+(?P<service>\w+)(?:\[(?P<pid>\d+)\])?:\s*(?P<message>.*)'
+      - timestamp:
+          source: timestamp
+          format: 'Jan 2 15:04:05'
+      - labels:
+          hostname:
+          service:
+          pid:
+
+  # WeMaster 后端日志
+  - job_name: wemaster-backend
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: wemaster-backend
+          __path__: /var/log/wemaster/backend/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            level: level
+            timestamp: timestamp
+            message: message
+            service: service
+            trace_id: trace_id
+            span_id: span_id
+            user_id: user_id
+            tenant_id: tenant_id
+      - timestamp:
+          source: timestamp
+          format: RFC3339
+      - labels:
+          level:
+          service:
+          trace_id:
+          span_id:
+          user_id:
+          tenant_id:
+
+  # WeMaster 前端日志
+  - job_name: wemaster-frontend
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: wemaster-frontend
+          __path__: /var/log/wemaster/frontend/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            level: level
+            timestamp: timestamp
+            message: message
+            component: component
+            user_id: user_id
+            session_id: session_id
+            error: error
+      - timestamp:
+          source: timestamp
+          format: RFC3339
+      - labels:
+          level:
+          component:
+          user_id:
+          session_id:
+
+  # Docker 容器日志
+  - job_name: containers
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: containers
+          __path__: /var/lib/docker/containers/*/*log
+    pipeline_stages:
+      - json:
+          expressions:
+            stream: stream
+            attrs: attrs
+            log: log
+      - json:
+          source: attrs
+          expressions:
+            com_docker_compose_service: service
+      - labels:
+          stream:
+          service:
+      - output:
+          source: log
+
+  # Nginx 访问日志
+  - job_name: nginx-access
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: nginx-access
+          __path__: /var/log/nginx/access.log
+    pipeline_stages:
+      - regex:
+          expression: '(?P<remote_addr>\S+) - (?P<remote_user>\S+) \[(?P<time_local>[^\]]+)\] "(?P<method>\S+) (?P<path>\S+) (?P<protocol>\S+)" (?P<status>\d+) (?P<body_bytes_sent>\d+) "(?P<http_referer>[^"]*)" "(?P<http_user_agent>[^"]*)"'
+      - timestamp:
+          source: time_local
+          format: '02/Jan/2006:15:04:05 -0700'
+      - labels:
+          method:
+          status:
+          remote_addr:
+      - output:
+          source: message
+
+  # Nginx 错误日志
+  - job_name: nginx-error
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: nginx-error
+          __path__: /var/log/nginx/error.log
+    pipeline_stages:
+      - regex:
+          expression: '(?P<timestamp>\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}) \[(?P<level>\w+)\] (?P<pid>\d+)#(?P<tid>\d+): (?P<message>.*)'
+      - timestamp:
+          source: timestamp
+          format: '2006/01/02 15:04:05'
+      - labels:
+          level:
+          pid:
+          tid:
+
+  # PostgreSQL 日志
+  - job_name: postgresql
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: postgresql
+          __path__: /var/log/postgresql/*.log
+    pipeline_stages:
+      - regex:
+          expression: '(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+) \[(?P<pid>\d+)\] (?P<level>\w+):\s+(?P<message>.*)'
+      - timestamp:
+          source: timestamp
+          format: '2006-01-02 15:04:05.000'
+      - labels:
+          level:
+          pid:
+
+  # Redis 日志
+  - job_name: redis
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: redis
+          __path__: /var/log/redis/*.log
+    pipeline_stages:
+      - regex:
+          expression: '(?P<timestamp>\d+:\d+:\d+) (?P<pid>\d+)#(?P<role>\w+) (?P<level>\w+) (?P<message>.*)'
+      - timestamp:
+          source: timestamp
+          format: '15:04:05'
+      - labels:
+          pid:
+          role:
+          level:
+
+  # 应用程序错误日志
+  - job_name: application-errors
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: application-errors
+          __path__: /var/log/wemaster/errors/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            message: message
+            stack: stack
+            service: service
+            user_id: user_id
+            request_id: request_id
+            error_code: error_code
+      - timestamp:
+          source: timestamp
+          format: RFC3339
+      - labels:
+          level:
+          service:
+          user_id:
+          request_id:
+          error_code:
+
+  # 审计日志
+  - job_name: audit
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: audit
+          __path__: /var/log/wemaster/audit/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            timestamp: timestamp
+            action: action
+            resource: resource
+            user_id: user_id
+            tenant_id: tenant_id
+            ip_address: ip_address
+            user_agent: user_agent
+            result: result
+      - timestamp:
+          source: timestamp
+          format: RFC3339
+      - labels:
+          action:
+          resource:
+          user_id:
+          tenant_id:
+          result:
+
+# 全局标签
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# 限制配置
+limits_config:
+  read_timeout: 5m
+  write_timeout: 5m
+  max_line_size: 256KB
+  max_entries_limit_per_query: 5000
+  max_query_length: 1000
+  max_query_parallelism: 32

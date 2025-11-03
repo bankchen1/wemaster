@@ -1,0 +1,97 @@
+:root {
+  /* Colors */
+  --color-primary: #409eff;
+  --color-success: #67c23a;
+  --color-warning: #e6a23c;
+  --color-danger: #f56c6c;
+  --color-info: #909399;
+  
+  /* Background Colors */
+  --bg-body: #f5f7fa;
+  --bg-container: #ffffff;
+  --bg-header: #ffffff;
+  --bg-sidebar: #ffffff;
+  --bg-footer: #ffffff;
+  
+  /* Text Colors */
+  --text-primary: #303133;
+  --text-regular: #606266;
+  --text-secondary: #909399;
+  --text-placeholder: #c0c4cc;
+  
+  /* Border Colors */
+  --border-base: #dcdfe6;
+  --border-light: #e4e7ed;
+  --border-lighter: #ebeef5;
+  --border-lightest: #f2f6fc;
+  
+  /* Shadows */
+  --shadow-base: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
+  --shadow-light: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  --shadow-lighter: 0 2px 8px 0 rgba(7, 17, 27, 0.06);
+  
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  
+  /* Font sizes */
+  --font-size-extra-small: 10px;
+  --font-size-small: 12px;
+  --font-size-base: 14px;
+  --font-size-large: 16px;
+  --font-size-extra-large: 18px;
+  --font-size-extra-extra-large: 20px;
+  
+  /* Radius */
+  --border-radius-base: 4px;
+  --border-radius-small: 2px;
+  --border-radius-large: 6px;
+  
+  /* Heights */
+  --height-xs: 24px;
+  --height-sm: 28px;
+  --height-base: 32px;
+  --height-lg: 36px;
+  --height-xl: 40px;
+  
+  /* Header & Sidebar */
+  --header-height: 60px;
+  --sidebar-width: 200px;
+  --footer-height: 40px;
+}
+
+/* Dark theme */
+[data-theme='dark'] {
+  --color-primary: #409eff;
+  --color-success: #67c23a;
+  --color-warning: #e6a23c;
+  --color-danger: #f56c6c;
+  --color-info: #909399;
+  
+  /* Background Colors */
+  --bg-body: #141414;
+  --bg-container: #1d1e1f;
+  --bg-header: #252627;
+  --bg-sidebar: #252627;
+  --bg-footer: #252627;
+  
+  /* Text Colors */
+  --text-primary: #e4e7ed;
+  --text-regular: #c0c4cc;
+  --text-secondary: #a0a0a5;
+  --text-placeholder: #8c8c8c;
+  
+  /* Border Colors */
+  --border-base: #4c4d4f;
+  --border-light: #57585a;
+  --border-lighter: #616264;
+  --border-lightest: #6b6c6e;
+  
+  /* Shadows */
+  --shadow-base: 0 2px 4px rgba(0, 0, 0, 0.4), 0 0 6px rgba(0, 0, 0, 0.2);
+  --shadow-light: 0 2px 12px 0 rgba(0, 0, 0, 0.5);
+  --shadow-lighter: 0 2px 8px 0 rgba(0, 0, 0, 0.3);
+}
